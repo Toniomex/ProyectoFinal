@@ -10,13 +10,13 @@ package com.proyectofinal.model;
  */
 
 import jakarta.persistence.*;
-import java.io.Serializable; // Añadir Serializable
+import java.io.Serializable; 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Chats")
-public class Chat implements Serializable { // Implementar Serializable
-    private static final long serialVersionUID = 1L; // UID para Serializable
+public class Chat implements Serializable { 
+    private static final long serialVersionUID = 1L; 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -12,14 +12,14 @@ package com.proyectofinal.model;
 import jakarta.persistence.*;
 import java.io.Serializable; // Añadir Serializable es una buena práctica para entidades JPA
 
-@Entity // Indica que esta clase es una entidad JPA y se mapea a una tabla de DB
-@Table(name = "Personas") // Especifica el nombre de la tabla en la base de datos
+@Entity
+@Table(name = "Personas")
 public class Persona implements Serializable { // Implementar Serializable
     private static final long serialVersionUID = 1L; // UID para Serializable
 
     @Id // Indica que este campo es la clave primaria
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Configura la generación automática de IDs
-    private Long idPersona; // Usar Long para IDs autoincrementales
+    private Long idPersona; 
 
     private String nombre;
 
@@ -35,7 +35,6 @@ public class Persona implements Serializable { // Implementar Serializable
     @Column(nullable = false)
     private Rol rol;
 
-    // Constructor sin argumentos (requerido por JPA)
     public Persona() {
     }
 
