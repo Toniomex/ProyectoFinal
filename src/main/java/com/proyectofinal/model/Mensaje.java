@@ -10,49 +10,38 @@ package com.proyectofinal.model;
  */
 
 import jakarta.persistence.*;
-import java.io.Serializable; 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Mensajes")
-public class Mensaje implements Serializable { 
-    private static final long serialVersionUID = 1L; 
+public class Mensaje {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_mensaje")
     private Long idMensaje;
 
-    @Column(nullable = false, columnDefinition = "LONGTEXT") // Mapea a LONGTEXT en MySQL
+    @Column(columnDefinition = "LONGTEXT", nullable = false)
     private String contenido;
 
     @Column(nullable = false)
     private LocalDateTime fechaEnvio;
 
-    private LocalDateTime fechaEliminacion; // Puede ser NULL
+    private LocalDateTime fechaEliminacion; // Para borrado lógico
 
-    @ManyToOne // Muchos mensajes pueden pertenecer a un chat
-    @JoinColumn(name = "idChat", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY) // Mantener LAZY para el chat, si no hay problemas
+    @JoinColumn(name = "id_chat", nullable = false)
     private Chat chat;
 
-    @ManyToOne // Un mensaje es enviado por una Persona
-    @JoinColumn(name = "idPersona", nullable = false)
-    private Persona remitente; // Para identificar quién envió el mensaje
+    @ManyToOne(fetch = FetchType.EAGER) // CAMBIO AQUÍ: Carga EAGER para la Persona
+    @JoinColumn(name = "id_persona", nullable = false) // Remitente del mensaje
+    private Persona persona;
 
-    // Constructor sin argumentos
+    // --- Constructores ---
     public Mensaje() {
     }
 
-    // Constructor con todos los argumentos
-    public Mensaje(Long idMensaje, String contenido, LocalDateTime fechaEnvio, LocalDateTime fechaEliminacion, Chat chat, Persona remitente) {
-        this.idMensaje = idMensaje;
-        this.contenido = contenido;
-        this.fechaEnvio = fechaEnvio;
-        this.fechaEliminacion = fechaEliminacion;
-        this.chat = chat;
-        this.remitente = remitente;
-    }
-
-    // Getters y Setters
+    // --- Getters y Setters ---
     public Long getIdMensaje() {
         return idMensaje;
     }
@@ -93,11 +82,11 @@ public class Mensaje implements Serializable {
         this.chat = chat;
     }
 
-    public Persona getRemitente() {
-        return remitente;
+    public Persona getPersona() {
+        return persona;
     }
 
-    public void setRemitente(Persona remitente) {
-        this.remitente = remitente;
+    public void setPersona(Persona persona) {
+        this.persona = persona;
     }
 }

@@ -15,3 +15,14 @@
 /home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/repository/MensajeRepository.java
 /home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/repository/PersonaRepository.java
 /home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/repository/UbicacionRepository.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/runner/DemoRunner.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/service/ChatService.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/service/ContratoService.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/service/MensajeService.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/service/PersonaService.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/service/UbicacionService.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/service/impl/ChatServiceImpl.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/service/impl/ContratoServiceImpl.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/service/impl/MensajeServiceImpl.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/service/impl/PersonaServiceImpl.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/service/impl/UbicacionServiceImpl.java

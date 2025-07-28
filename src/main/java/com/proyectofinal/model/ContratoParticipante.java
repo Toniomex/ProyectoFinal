@@ -9,46 +9,41 @@ package com.proyectofinal.model;
  * @author antoine
  */
 
+
 import jakarta.persistence.*;
-import java.io.Serializable; // Añadir Serializable
 
 @Entity
 @Table(name = "ContratoParticipantes")
-public class ContratoParticipante implements Serializable { // Implementar Serializable
-    private static final long serialVersionUID = 1L; // UID para Serializable
+public class ContratoParticipante {
+
+    public enum TipoParticipante {
+        ARRENDADOR, INQUILINO
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_contrato_participante")
     private Long idContratoParticipante;
 
-    @ManyToOne // Muchos participantes pueden estar en un contrato
-    @JoinColumn(name = "idContrato", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_contrato", nullable = false)
     private Contrato contrato;
 
-    @ManyToOne // Un participante puede ser una Persona (inquilino)
-    @JoinColumn(name = "idPersona", nullable = true) // idPersona puede ser NULL para arrendadores
-    private Persona persona; // Solo para inquilinos
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_persona") // Puede ser nulo si el participante es solo un arrendador (por NIF)
+    private Persona persona;
 
-    private String NIFArrendador; // Solo para arrendadores (puede ser NULL para inquilinos)
+    private String nifArrendador; // Para identificar al arrendador en este contexto
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TipoParticipante tipoParticipante; // inquilino o arrendador
+    private TipoParticipante tipoParticipante;
 
-    // Constructor sin argumentos
+    // --- Constructores ---
     public ContratoParticipante() {
     }
 
-    // Constructor con todos los argumentos
-    public ContratoParticipante(Long idContratoParticipante, Contrato contrato, Persona persona, String NIFArrendador, TipoParticipante tipoParticipante) {
-        this.idContratoParticipante = idContratoParticipante;
-        this.contrato = contrato;
-        this.persona = persona;
-        this.NIFArrendador = NIFArrendador;
-        this.tipoParticipante = tipoParticipante;
-    }
-
-    // Getters y Setters
+    // --- Getters y Setters ---
     public Long getIdContratoParticipante() {
         return idContratoParticipante;
     }
@@ -73,12 +68,12 @@ public class ContratoParticipante implements Serializable { // Implementar Seria
         this.persona = persona;
     }
 
-    public String getNIFArrendador() {
-        return NIFArrendador;
+    public String getNifArrendador() {
+        return nifArrendador;
     }
 
-    public void setNIFArrendador(String NIFArrendador) {
-        this.NIFArrendador = NIFArrendador;
+    public void setNifArrendador(String nifArrendador) {
+        this.nifArrendador = nifArrendador;
     }
 
     public TipoParticipante getTipoParticipante() {

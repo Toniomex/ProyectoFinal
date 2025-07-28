@@ -8,55 +8,48 @@ package com.proyectofinal.model;
  *
  * @author antoine
  */
+
 import jakarta.persistence.*;
-import java.io.Serializable; // Añadir Serializable
 
 @Entity
 @Table(name = "Ubicaciones")
-public class Ubicacion implements Serializable { // Implementar Serializable
-    private static final long serialVersionUID = 1L; // UID para Serializable
+public class Ubicacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_ubicacion")
     private Long idUbicacion;
 
     @Column(nullable = false)
     private String calle;
+
     private String numeroCalle;
+
     private String piso;
-    private String escalera;
+
     private String puerta;
-    private String otro;
+
+    private String escalera;
 
     @Column(nullable = false)
     private String codigoPostal;
+
     @Column(nullable = false)
     private String ciudad;
+
     @Column(nullable = false)
     private String provincia;
+
     @Column(nullable = false)
     private String pais;
 
-    // Constructor sin argumentos
+    private String otro; // Campo genérico para información adicional
+
+    // --- Constructores ---
     public Ubicacion() {
     }
 
-    // Constructor con todos los argumentos
-    public Ubicacion(Long idUbicacion, String calle, String numeroCalle, String piso, String escalera, String puerta, String otro, String codigoPostal, String ciudad, String provincia, String pais) {
-        this.idUbicacion = idUbicacion;
-        this.calle = calle;
-        this.numeroCalle = numeroCalle;
-        this.piso = piso;
-        this.escalera = escalera;
-        this.puerta = puerta;
-        this.otro = otro;
-        this.codigoPostal = codigoPostal;
-        this.ciudad = ciudad;
-        this.provincia = provincia;
-        this.pais = pais;
-    }
-
-    // Getters y Setters
+    // --- Getters y Setters ---
     public Long getIdUbicacion() {
         return idUbicacion;
     }
@@ -89,14 +82,6 @@ public class Ubicacion implements Serializable { // Implementar Serializable
         this.piso = piso;
     }
 
-    public String getEscalera() {
-        return escalera;
-    }
-
-    public void setEscalera(String escalera) {
-        this.escalera = escalera;
-    }
-
     public String getPuerta() {
         return puerta;
     }
@@ -105,12 +90,12 @@ public class Ubicacion implements Serializable { // Implementar Serializable
         this.puerta = puerta;
     }
 
-    public String getOtro() {
-        return otro;
+    public String getEscalera() {
+        return escalera;
     }
 
-    public void setOtro(String otro) {
-        this.otro = otro;
+    public void setEscalera(String escalera) {
+        this.escalera = escalera;
     }
 
     public String getCodigoPostal() {
@@ -143,5 +128,13 @@ public class Ubicacion implements Serializable { // Implementar Serializable
 
     public void setPais(String pais) {
         this.pais = pais;
+    }
+
+    public String getOtro() {
+        return otro;
+    }
+
+    public void setOtro(String otro) {
+        this.otro = otro;
     }
 }

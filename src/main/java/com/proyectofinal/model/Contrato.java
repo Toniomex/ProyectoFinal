@@ -10,24 +10,17 @@ package com.proyectofinal.model;
  */
 
 import jakarta.persistence.*;
-import java.io.Serializable; // Añadir Serializable
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "Contratos")
-public class Contrato implements Serializable { // Implementar Serializable
-    private static final long serialVersionUID = 1L; // UID para Serializable
+public class Contrato {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_contrato")
     private Long idContrato;
-
-    @Column(nullable = false)
-    private BigDecimal precio;
-
-    private String duracion;
-    private String tipo;
 
     @Column(nullable = false)
     private LocalDate fechaInicio;
@@ -35,56 +28,35 @@ public class Contrato implements Serializable { // Implementar Serializable
     @Column(nullable = false)
     private LocalDate fechaFinal;
 
-    @ManyToOne // Un contrato pertenece a una ubicación
-    @JoinColumn(name = "idUbicacion", nullable = false) // Nombre de la columna FK en Contratos
+    private String duracion; // Puede ser opcional
+
+    @Column(nullable = false)
+    private BigDecimal precio; // Usar BigDecimal para precisión monetaria
+
+    private String tipo;
+
+    @Column(name = "id_arrendador_nif", nullable = false) // Campo para el NIF del arrendador
+    private String nifArrendador;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_ubicacion", nullable = false)
     private Ubicacion ubicacion;
 
-    // Constructor sin argumentos
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_inquilino", nullable = false) // Asocia el contrato a una persona (inquilino)
+    private Persona inquilino;
+
+    // --- Constructores ---
     public Contrato() {
     }
 
-    // Constructor con todos los argumentos
-    public Contrato(Long idContrato, BigDecimal precio, String duracion, String tipo, LocalDate fechaInicio, LocalDate fechaFinal, Ubicacion ubicacion) {
-        this.idContrato = idContrato;
-        this.precio = precio;
-        this.duracion = duracion;
-        this.tipo = tipo;
-        this.fechaInicio = fechaInicio;
-        this.fechaFinal = fechaFinal;
-        this.ubicacion = ubicacion;
-    }
-
-    // Getters y Setters
+    // --- Getters y Setters ---
     public Long getIdContrato() {
         return idContrato;
     }
 
     public void setIdContrato(Long idContrato) {
         this.idContrato = idContrato;
-    }
-
-    public BigDecimal getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(BigDecimal precio) {
-        this.precio = precio;
-    }
-
-    public String getDuracion() {
-        return duracion;
-    }
-
-    public void setDuracion(String duracion) {
-        this.duracion = duracion;
-    }
-
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
     }
 
     public LocalDate getFechaInicio() {
@@ -103,6 +75,30 @@ public class Contrato implements Serializable { // Implementar Serializable
         this.fechaFinal = fechaFinal;
     }
 
+    public String getDuracion() {
+        return duracion;
+    }
+
+    public void setDuracion(String duracion) {
+        this.duracion = duracion;
+    }
+
+    public BigDecimal getPrecio() {
+        return precio;
+    }
+
+    public void setPrecio(BigDecimal precio) {
+        this.precio = precio;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
     public Ubicacion getUbicacion() {
         return ubicacion;
     }
@@ -110,5 +106,20 @@ public class Contrato implements Serializable { // Implementar Serializable
     public void setUbicacion(Ubicacion ubicacion) {
         this.ubicacion = ubicacion;
     }
-}
 
+    public Persona getInquilino() {
+        return inquilino;
+    }
+
+    public void setInquilino(Persona inquilino) {
+        this.inquilino = inquilino;
+    }
+
+    public String getNifArrendador() {
+        return nifArrendador;
+    }
+
+    public void setNifArrendador(String nifArrendador) {
+        this.nifArrendador = nifArrendador;
+    }
+}

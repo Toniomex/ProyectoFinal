@@ -8,27 +8,33 @@ package com.proyectofinal.repository;
  *
  * @author antoine
  */
-import com.proyectofinal.model.Contrato;
 import com.proyectofinal.model.ContratoParticipante;
+import com.proyectofinal.model.Contrato;
 import com.proyectofinal.model.Persona;
-import com.proyectofinal.model.TipoParticipante;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+/**
+ * Interfaz de repositorio para la entidad ContratoParticipante.
+ * Extiende JpaRepository para proporcionar operaciones CRUD básicas
+ * y métodos de consulta personalizados para ContratoParticipante.
+ */
 public interface ContratoParticipanteRepository extends JpaRepository<ContratoParticipante, Long> {
-    // Buscar participantes por contrato y tipo (inquilino/arrendador)
-    List<ContratoParticipante> findByContratoAndTipoParticipante(Contrato contrato, TipoParticipante tipoParticipante);
+    /**
+     * Busca participantes de contrato por el NIF del arrendador.
+     * Esto es útil para encontrar todos los inquilinos asociados a un mismo arrendador.
+     * @param nifArrendador El NIF del arrendador.
+     * @return Una lista de ContratoParticipante asociados a ese NIF de arrendador.
+     */
+    // Corregido: El nombre del método debe coincidir con el nombre del campo en la entidad (nifArrendador)
+    List<ContratoParticipante> findByNifArrendador(String nifArrendador);
 
-    // Buscar participantes por NIF de arrendador
-    List<ContratoParticipante> findByNIFArrendador(String NIFArrendador);
-
-    // Buscar participantes por Persona (para inquilinos)
-    List<ContratoParticipante> findByPersona(Persona persona);
-
-    // Buscar un participante específico por contrato y persona
+    /**
+     * Busca un ContratoParticipante específico por Contrato y Persona.
+     * @param contrato El objeto Contrato.
+     * @param persona El objeto Persona.
+     * @return Un Optional que contiene el ContratoParticipante si se encuentra, o vacío si no.
+     */
     Optional<ContratoParticipante> findByContratoAndPersona(Contrato contrato, Persona persona);
 }

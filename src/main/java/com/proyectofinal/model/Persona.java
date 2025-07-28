@@ -10,45 +10,52 @@ package com.proyectofinal.model;
  */
 
 import jakarta.persistence.*;
-import java.io.Serializable; // Añadir Serializable es una buena práctica para entidades JPA
+import java.util.Set; // Para la relación ManyToMany con Chat
 
 @Entity
-@Table(name = "Personas")
-public class Persona implements Serializable { // Implementar Serializable
-    private static final long serialVersionUID = 1L; // UID para Serializable
+@Table(name = "Personas") // Asegúrate de que coincida con tu estrategia de nombres
+public class Persona {
 
-    @Id // Indica que este campo es la clave primaria
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Configura la generación automática de IDs
-    private Long idPersona; 
+    public enum Rol {
+        ADMINISTRADOR, INQUILINO
+    }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_persona")
+    private Long idPersona;
 
     private String nombre;
 
-    @Column(unique = true, nullable = false) // Asegura que el mail sea único y no nulo
+    @Column(unique = true, nullable = false)
     private String mail;
+
+    @Column(nullable = false)
+    private String contraseña; // En una app real, esto debe ser hasheado
 
     private String telefono;
 
-    @Column(nullable = false)
-    private String contraseña; // Almacenará el hash de la contraseña
-
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING) // Almacena el enum como String en la DB
     @Column(nullable = false)
     private Rol rol;
 
+    // Relación ManyToMany con Chat (para participantes del chat)
+    @ManyToMany(mappedBy = "participantes")
+    private Set<Chat> chats;
+
+    // --- Constructores ---
     public Persona() {
     }
 
-    // Constructor con todos los argumentos
-    public Persona(Long idPersona, String nombre, String mail, String telefono, String contraseña, Rol rol) {
-        this.idPersona = idPersona;
+    public Persona(String nombre, String mail, String contraseña, String telefono, Rol rol) {
         this.nombre = nombre;
         this.mail = mail;
-        this.telefono = telefono;
         this.contraseña = contraseña;
+        this.telefono = telefono;
         this.rol = rol;
     }
 
-    // Getters y Setters
+    // --- Getters y Setters ---
     public Long getIdPersona() {
         return idPersona;
     }
@@ -73,14 +80,6 @@ public class Persona implements Serializable { // Implementar Serializable
         this.mail = mail;
     }
 
-    public String getTelefono() {
-        return telefono;
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
-    }
-
     public String getContraseña() {
         return contraseña;
     }
@@ -89,11 +88,37 @@ public class Persona implements Serializable { // Implementar Serializable
         this.contraseña = contraseña;
     }
 
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
     public Rol getRol() {
         return rol;
     }
 
     public void setRol(Rol rol) {
         this.rol = rol;
+    }
+
+    public Set<Chat> getChats() {
+        return chats;
+    }
+
+    public void setChats(Set<Chat> chats) {
+        this.chats = chats;
+    }
+
+    @Override
+    public String toString() {
+        return "Persona{" +
+               "idPersona=" + idPersona +
+               ", nombre='" + nombre + '\'' +
+               ", mail='" + mail + '\'' +
+               ", rol=" + rol +
+               '}';
     }
 }
