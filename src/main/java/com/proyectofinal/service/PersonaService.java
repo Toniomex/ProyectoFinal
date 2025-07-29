@@ -14,7 +14,8 @@ import java.util.Optional; // Necesario para Optional
 
 public interface PersonaService {
     Persona registrarPersona(Persona persona);
-    Optional<Persona> autenticarPersona(String mail, String password);
+    Optional<Persona> autenticarPersona(String mail, String password); // Este método ya no es usado directamente por el login del controlador
     Optional<Persona> obtenerPersonaPorId(Long id);
+    Optional<Persona> obtenerPersonaPorMail(String mail); // NUEVO MÉTODO
     // Puedes añadir más métodos CRUD si los necesitas (ej. actualizar, eliminar)
 }

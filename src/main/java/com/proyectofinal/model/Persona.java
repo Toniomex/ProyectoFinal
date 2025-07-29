@@ -10,14 +10,25 @@ package com.proyectofinal.model;
  */
 
 import jakarta.persistence.*;
-import java.util.Set; // Para la relación ManyToMany con Chat
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Collections; // Importar Collections
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
-@Table(name = "Personas") // Asegúrate de que coincida con tu estrategia de nombres
-public class Persona {
+@Table(name = "Personas")
+public class Persona implements UserDetails { // Implementa UserDetails
 
     public enum Rol {
-        ADMINISTRADOR, INQUILINO
+        ADMINISTRADOR, INQUILINO; // Definir roles
+
+        // Método para obtener la autoridad de Spring Security
+        public String getAuthorityName() {
+            return "ROLE_" + this.name();
+        }
     }
 
     @Id
@@ -28,18 +39,17 @@ public class Persona {
     private String nombre;
 
     @Column(unique = true, nullable = false)
-    private String mail;
+    private String mail; // Usaremos mail como nombre de usuario para Spring Security
 
     @Column(nullable = false)
-    private String contraseña; // En una app real, esto debe ser hasheado
+    private String contraseña; // La contraseña hasheada
 
     private String telefono;
 
-    @Enumerated(EnumType.STRING) // Almacena el enum como String en la DB
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Rol rol;
 
-    // Relación ManyToMany con Chat (para participantes del chat)
     @ManyToMany(mappedBy = "participantes")
     private Set<Chat> chats;
 
@@ -120,5 +130,42 @@ public class Persona {
                ", mail='" + mail + '\'' +
                ", rol=" + rol +
                '}';
+    }
+
+    // --- Métodos de UserDetails ---
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Devuelve una colección de autoridades (roles) para esta persona
+        return Collections.singletonList(new SimpleGrantedAuthority(rol.getAuthorityName()));
+    }
+
+    @Override
+    public String getPassword() {
+        return this.contraseña;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.mail; // Usamos el email como nombre de usuario para Spring Security
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // Siempre activa para esta demo
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; // Siempre no bloqueada para esta demo
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // Siempre no expiradas para esta demo
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true; // Siempre habilitada para esta demo
     }
 }

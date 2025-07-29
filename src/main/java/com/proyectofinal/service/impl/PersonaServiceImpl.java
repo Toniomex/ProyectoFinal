@@ -9,32 +9,42 @@ package com.proyectofinal.service.impl;
  * @author antoine
  */
 import com.proyectofinal.model.Persona;
-import com.proyectofinal.repository.PersonaRepository; // Necesitarás crear esta interfaz de repositorio
+import com.proyectofinal.repository.PersonaRepository;
 import com.proyectofinal.service.PersonaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-@Service // Anotación para que Spring la detecte como un componente de servicio
+@Service
 public class PersonaServiceImpl implements PersonaService {
 
     @Autowired
-    private PersonaRepository personaRepository; // Inyección del repositorio
+    private PersonaRepository personaRepository;
+
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
+    @Transactional
     public Persona registrarPersona(Persona persona) {
-        // Aquí podrías añadir lógica de negocio, como hashear la contraseña
-        // Por ahora, solo guarda la persona directamente
+        String encodedPassword = bCryptPasswordEncoder.encode(persona.getContraseña());
+        persona.setContraseña(encodedPassword);
         return personaRepository.save(persona);
     }
 
     @Override
     public Optional<Persona> autenticarPersona(String mail, String password) {
-        // En una aplicación real, aquí compararías la contraseña hasheada
-        Optional<Persona> persona = personaRepository.findByMail(mail); // Necesitarás este método en PersonaRepository
-        if (persona.isPresent() && persona.get().getContraseña().equals(password)) {
-            return persona;
+        // Este método ya no es el principal para la autenticación en el controlador,
+        // pero se mantiene si es usado en otras partes o para pruebas directas.
+        Optional<Persona> personaOpt = personaRepository.findByMail(mail);
+        if (personaOpt.isPresent()) {
+            Persona persona = personaOpt.get();
+            if (bCryptPasswordEncoder.matches(password, persona.getContraseña())) {
+                return Optional.of(persona);
+            }
         }
         return Optional.empty();
     }
@@ -42,5 +52,10 @@ public class PersonaServiceImpl implements PersonaService {
     @Override
     public Optional<Persona> obtenerPersonaPorId(Long id) {
         return personaRepository.findById(id);
+    }
+
+    @Override
+    public Optional<Persona> obtenerPersonaPorMail(String mail) { // IMPLEMENTACIÓN DEL NUEVO MÉTODO
+        return personaRepository.findByMail(mail);
     }
 }
