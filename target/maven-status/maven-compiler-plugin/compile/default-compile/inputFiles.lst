@@ -1,7 +1,9 @@
 /home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/ProyectoFinalApplication.java
 /home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/config/AppConfig.java
 /home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/config/SecurityConfig.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/controller/ContratoController.java
 /home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/controller/PersonaController.java
+/home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/controller/UbicacionController.java
 /home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/model/Chat.java
 /home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/model/Contrato.java
 /home/antoine/NetBeansProjects/ProyectoFinal/src/main/java/com/proyectofinal/model/ContratoParticipante.java

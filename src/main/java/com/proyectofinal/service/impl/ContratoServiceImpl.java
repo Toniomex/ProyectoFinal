@@ -9,22 +9,29 @@ package com.proyectofinal.service.impl;
  * @author antoine
  */
 
+
 import com.proyectofinal.model.Contrato;
 import com.proyectofinal.model.ContratoParticipante;
+import com.proyectofinal.model.Chat;
 import com.proyectofinal.model.Persona;
-import com.proyectofinal.model.Chat; // Importar Chat
-import com.proyectofinal.repository.ContratoParticipanteRepository;
+import com.proyectofinal.model.TipoParticipante; // Importar TipoParticipante directamente
 import com.proyectofinal.repository.ContratoRepository;
+import com.proyectofinal.repository.ContratoParticipanteRepository;
 import com.proyectofinal.service.ContratoService;
-import com.proyectofinal.service.PersonaService; // Para obtener la Persona por ID
-import com.proyectofinal.service.ChatService; // Para interactuar con el servicio de chat
+import com.proyectofinal.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Implementación del servicio para la gestión de Contratos.
+ * Contiene la lógica de negocio para los contratos de alquiler,
+ * incluyendo la creación/unión automática a chats.
+ */
 @Service
 public class ContratoServiceImpl implements ContratoService {
 
@@ -35,63 +42,60 @@ public class ContratoServiceImpl implements ContratoService {
     private ContratoParticipanteRepository contratoParticipanteRepository;
 
     @Autowired
-    private PersonaService personaService; // Para buscar la persona inquilina
-
-    @Autowired
-    private ChatService chatService; // Para interactuar con el chat
+    private ChatService chatService;
 
     @Override
     @Transactional
-    public Contrato crearContrato(Contrato contrato, Long inquilinoId, String nifArrendador) {
-        // *** CORRECCIÓN IMPORTANTE 1: Establecer idArrendadorNIF antes de la primera llamada a save ***
-        contrato.setIdArrendadorNIF(nifArrendador);
-
-        // *** CORRECCIÓN IMPORTANTE 2: Obtener y establecer el inquilino antes de la primera llamada a save ***
-        Persona inquilino = personaService.obtenerPersonaPorId(inquilinoId)
-                                          .orElseThrow(() -> new RuntimeException("Inquilino no encontrado con ID: " + inquilinoId));
-        contrato.setInquilino(inquilino);
-
+    public Contrato crearContrato(Contrato contrato) {
         // 1. Guardar el contrato
-        Contrato nuevoContrato = contratoRepository.save(contrato); // Ahora 'inquilino' y 'idArrendadorNIF' ya están establecidos
+        Contrato nuevoContrato = contratoRepository.save(contrato);
 
-        // 2. Asociar al inquilino al contratoParticipante
-        ContratoParticipante inquilinoParticipante = new ContratoParticipante(null, nuevoContrato, inquilino, null, ContratoParticipante.TipoParticipante.INQUILINO);
-        contratoParticipanteRepository.save(inquilinoParticipante);
-        System.out.println("DEBUG: ContratoParticipante creado para inquilino " + inquilino.getNombre() + " y contrato " + nuevoContrato.getIdContrato());
+        // 2. Crear o encontrar el chat asociado al NIF del arrendador
+        Optional<Chat> chatExistente = chatService.obtenerChatPorNifArrendador(contrato.getIdArrendadorNIF());
+        Chat chat;
+        if (chatExistente.isPresent()) {
+            chat = chatExistente.get();
+            System.out.println("DEBUG: Chat existente encontrado para NIF " + contrato.getIdArrendadorNIF() + ": " + chat.getNombreChat());
+        } else {
+            // Si no existe, crear un nuevo chat
+            String nombreChat = "Chat Arrendador " + contrato.getIdArrendadorNIF();
+            chat = chatService.crearChat(contrato.getIdArrendadorNIF(), nombreChat);
+            System.out.println("DEBUG: Nuevo chat creado para NIF " + contrato.getIdArrendadorNIF() + ": " + chat.getNombreChat());
+        }
 
-        // 3. Crear o verificar el chat para el arrendador y añadir al inquilino
-        String chatNombre = "Chat Arrendador " + nifArrendador;
-        Chat chat = chatService.crearOObtenerChat(nifArrendador, chatNombre, inquilino);
-        System.out.println("DEBUG: Inquilino " + inquilino.getNombre() + " añadido/verificado en chat " + chat.getNombreChat());
+        // 3. Crear ContratoParticipante para el inquilino y el contrato
+        ContratoParticipante contratoParticipante = new ContratoParticipante();
+        contratoParticipante.setContrato(nuevoContrato);
+        contratoParticipante.setPersona(contrato.getInquilino());
+        // CORREGIDO: Usar setNIFArrendador con NIF en mayúsculas
+        contratoParticipante.setNIFArrendador(contrato.getIdArrendadorNIF());
+        contratoParticipante.setTipoParticipante(TipoParticipante.INQUILINO);
+        contratoParticipanteRepository.save(contratoParticipante);
+        System.out.println("DEBUG: ContratoParticipante creado para inquilino " + contrato.getInquilino().getNombre() + " y contrato " + nuevoContrato.getIdContrato());
 
+        // 4. Añadir el inquilino al chat (si no está ya)
+        chatService.añadirInquilinoAchat(chat.getIdChat(), contrato.getInquilino());
+        System.out.println("DEBUG: Inquilino " + contrato.getInquilino().getNombre() + " añadido/verificado en chat " + chat.getNombreChat());
 
-        // 4. Asociar al arrendador (por NIF) al contratoParticipante
-        ContratoParticipante arrendadorParticipante = new ContratoParticipante(null, nuevoContrato, null, nifArrendador, ContratoParticipante.TipoParticipante.ARRENDADOR);
-        contratoParticipanteRepository.save(arrendadorParticipante);
-
-        return nuevoContrato; // Retornar el contrato ya guardado
+        return nuevoContrato;
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Contrato> obtenerContratoPorId(Long id) {
         return contratoRepository.findById(id);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Contrato> obtenerTodosLosContratos() {
-        return contratoRepository.findAll();
+    public List<Contrato> obtenerContratosPorInquilino(Long idInquilino) {
+        return contratoRepository.findByInquilino_IdPersona(idInquilino);
     }
 
     @Override
-    @Transactional
     public Contrato actualizarContrato(Contrato contrato) {
         return contratoRepository.save(contrato);
     }
 
     @Override
-    @Transactional
     public void eliminarContrato(Long id) {
         contratoRepository.deleteById(id);
     }

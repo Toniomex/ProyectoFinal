@@ -1,0 +1,421 @@
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inquilinos Unidos - Plataforma</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Configuración de la fuente Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilos personalizados si son necesarios, aunque se prefiere Tailwind */
+        .chat-message-bubble {
+            background-color: #e0f2fe; /* Light blue, similar to chat bubbles */
+            border-radius: 1.5rem; /* More rounded corners */
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 0.5rem;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .chat-message-bubble.sent {
+            background-color: #d1fae5; /* Light green for sent messages */
+            margin-left: auto; /* Align to right */
+        }
+        .chat-container {
+            max-height: 400px; /* Fixed height for chat scroll */
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Header Section - Inspired by reviucasa.com's clean header -->
+    <header class="bg-white shadow-sm py-4 px-6 md:px-12 rounded-b-xl">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-600">Inquilinos Unidos</h1>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="#" class="text-gray-600 hover:text-blue-500 font-medium">Inicio</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-blue-500 font-medium">Mis Contratos</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-blue-500 font-medium">Chats</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-blue-500 font-medium">Perfil</a></li>
+                    <li id="logout-container" class="hidden">
+                        <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out text-sm">
+                            Cerrar Sesión
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto p-6 md:p-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <!-- User Registration/Login Section -->
+            <section id="auth-section" class="bg-white p-8 rounded-xl shadow-md">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6">Registro / Inicio de Sesión</h2>
+                <div id="auth-status" class="mb-4 text-center font-medium"></div>
+
+                <form id="register-form" class="mb-8">
+                    <h3 class="text-xl font-medium text-gray-600 mb-4">Registrarse</h3>
+                    <div class="mb-4">
+                        <label for="register-name" class="block text-gray-700 text-sm font-bold mb-2">Nombre (Opcional)</label>
+                        <input type="text" id="register-name" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Tu nombre">
+                    </div>
+                    <div class="mb-4">
+                        <label for="register-email" class="block text-gray-700 text-sm font-bold mb-2">Email <span class="text-red-500">*</span></label>
+                        <input type="email" id="register-email" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="tu@email.com" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="register-password" class="block text-gray-700 text-sm font-bold mb-2">Contraseña <span class="text-red-500">*</span></label>
+                        <input type="password" id="register-password" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" placeholder="********" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="register-phone" class="block text-gray-700 text-sm font-bold mb-2">Teléfono (Opcional)</label>
+                        <input type="text" id="register-phone" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Tu número de teléfono">
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                        Registrarse
+                    </button>
+                </form>
+
+                <form id="login-form">
+                    <h3 class="text-xl font-medium text-gray-600 mb-4">Iniciar Sesión</h3>
+                    <div class="mb-4">
+                        <label for="login-email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                        <input type="email" id="login-email" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="tu@email.com" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="login-password" class="block text-gray-700 text-sm font-bold mb-2">Contraseña</label>
+                        <input type="password" id="login-password" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" placeholder="********" required>
+                    </div>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                        Iniciar Sesión
+                    </button>
+                </form>
+            </section>
+
+            <!-- Chat Section -->
+            <section class="bg-white p-8 rounded-xl shadow-md flex flex-col">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6">Chat con tu Arrendador</h2>
+                <div class="mb-4">
+                    <label for="chat-nif" class="block text-gray-700 text-sm font-bold mb-2">NIF del Arrendador (para unirse/crear chat)</label>
+                    <input type="text" id="chat-nif" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ej: A12345678">
+                    <button id="join-chat-btn" class="mt-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                        Unirse/Ver Chat
+                    </button>
+                </div>
+                
+                <div class="flex-grow border border-gray-200 rounded-lg p-4 mb-4 chat-container">
+                    <div id="chat-messages" class="flex flex-col w-full">
+                        <!-- Messages will be loaded here -->
+                        <div class="chat-message-bubble">Bienvenido al chat. Introduce el NIF de tu arrendador para empezar.</div>
+                    </div>
+                </div>
+
+                <form id="chat-form" class="mt-auto">
+                    <div class="flex items-center">
+                        <input type="text" id="chat-input" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2" placeholder="Escribe tu mensaje..." disabled>
+                        <button type="submit" id="send-message-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out" disabled>
+                            Enviar
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-gray-800 text-white py-4 px-6 md:px-12 mt-8 rounded-t-xl">
+        <div class="container mx-auto text-center text-sm">
+            &copy; 2025 Inquilinos Unidos. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <script>
+        // Base URL de tu backend Spring Boot
+        const API_BASE_URL = 'http://localhost:8080/api';
+
+        // Elementos del DOM
+        const authStatusDiv = document.getElementById('auth-status');
+        const registerForm = document.getElementById('register-form');
+        const loginForm = document.getElementById('login-form');
+        const chatNifInput = document.getElementById('chat-nif');
+        const joinChatBtn = document.getElementById('join-chat-btn');
+        const chatMessagesDiv = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const sendMessageBtn = document.getElementById('send-message-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const logoutContainer = document.getElementById('logout-container');
+        const authSection = document.getElementById('auth-section');
+
+
+        let currentUserId = null; // ID del usuario autenticado
+        let currentUserName = null; // Nombre del usuario autenticado
+        let currentChatId = null; // ID del chat actual
+
+        // Función para mostrar mensajes de estado
+        function showStatus(message, type = 'info') {
+            authStatusDiv.textContent = message;
+            authStatusDiv.className = `mb-4 text-center font-medium p-2 rounded-lg ${
+                type === 'success' ? 'bg-green-100 text-green-700' :
+                type === 'error' ? 'bg-red-100 text-red-700' :
+                'bg-blue-100 text-blue-700'
+            }`;
+        }
+
+        // Función para actualizar el estado de la UI según la autenticación
+        function updateAuthUI() {
+            if (currentUserId && currentUserName) {
+                showStatus(`¡Bienvenido, ${currentUserName}! Sesión iniciada.`, 'success');
+                authSection.classList.add('hidden'); // Oculta los formularios de registro/login
+                logoutContainer.classList.remove('hidden'); // Muestra el botón de logout
+                chatInput.disabled = false;
+                sendMessageBtn.disabled = false;
+            } else {
+                showStatus('Inicia sesión o regístrate para comenzar.', 'info');
+                authSection.classList.remove('hidden'); // Muestra los formularios
+                logoutContainer.classList.add('hidden'); // Oculta el botón de logout
+                chatInput.disabled = true;
+                sendMessageBtn.disabled = true;
+            }
+        }
+
+        // Función para añadir mensajes al chat UI
+        function addMessageToChat(senderName, content, isSentByCurrentUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message-bubble ${isSentByCurrentUser ? 'sent' : 'received'}`;
+            messageDiv.innerHTML = `<strong class="font-semibold">${senderName}:</strong> ${content}`;
+            chatMessagesDiv.appendChild(messageDiv);
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll to bottom
+        }
+
+        // --- Funcionalidad de Registro ---
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const telefono = document.getElementById('register-phone').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, mail: email, contraseña: password, telefono, rol: 'INQUILINO' }),
+                    credentials: 'include' // IMPORTANTE: Enviar cookies de sesión
+                });
+
+                if (response.ok) {
+                    showStatus('Registro exitoso. ¡Ahora puedes iniciar sesión!', 'success');
+                    registerForm.reset();
+                } else {
+                    const errorData = await response.json();
+                    showStatus(`Error en el registro: ${errorData.message || response.statusText}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error de red al registrar:', error);
+                showStatus('Error de conexión al intentar registrar. Inténtalo de nuevo más tarde.', 'error');
+            }
+        });
+
+        // --- Funcionalidad de Inicio de Sesión ---
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mail: email, contraseña: password }),
+                    credentials: 'include' // IMPORTANTE: Enviar cookies de sesión
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    currentUserId = userData.idPersona;
+                    currentUserName = userData.nombre || userData.mail;
+                    localStorage.setItem('currentUserId', currentUserId); // Persistir ID
+                    localStorage.setItem('currentUserName', currentUserName); // Persistir Nombre
+                    updateAuthUI(); // Actualizar UI
+                    loginForm.reset();
+                } else {
+                    const errorData = await response.json();
+                    showStatus(`Error al iniciar sesión: ${errorData.message || response.statusText}`, 'error');
+                    currentUserId = null;
+                    currentUserName = null;
+                    localStorage.removeItem('currentUserId');
+                    localStorage.removeItem('currentUserName');
+                    updateAuthUI(); // Actualizar UI
+                }
+            } catch (error) {
+                console.error('Error de red al iniciar sesión:', error);
+                showStatus('Error de conexión al intentar iniciar sesión. Inténtalo de nuevo más tarde.', 'error');
+                currentUserId = null;
+                currentUserName = null;
+                localStorage.removeItem('currentUserId');
+                localStorage.removeItem('currentUserName');
+                updateAuthUI(); // Actualizar UI
+            }
+        });
+
+        // --- Funcionalidad de Cerrar Sesión ---
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/logout`, { // Endpoint de logout de Spring Security
+                    method: 'POST', // Spring Security por defecto usa POST para logout
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    currentUserId = null;
+                    currentUserName = null;
+                    currentChatId = null;
+                    localStorage.removeItem('currentUserId');
+                    localStorage.removeItem('currentUserName');
+                    showStatus('Sesión cerrada correctamente.', 'info');
+                    chatMessagesDiv.innerHTML = '<div class="chat-message-bubble">Bienvenido al chat. Inicia sesión para empezar.</div>';
+                    updateAuthUI(); // Actualizar UI
+                } else {
+                    const errorData = await response.json();
+                    showStatus(`Error al cerrar sesión: ${errorData.message || response.statusText}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error de red al cerrar sesión:', error);
+                showStatus('Error de conexión al intentar cerrar sesión. Inténtalo de nuevo más tarde.', 'error');
+            }
+        });
+
+        // --- Funcionalidad de Unirse/Ver Chat ---
+        joinChatBtn.addEventListener('click', async () => {
+            if (!currentUserId) {
+                showStatus('Por favor, inicia sesión primero para unirte a un chat.', 'info');
+                return;
+            }
+
+            const nifArrendador = chatNifInput.value.trim();
+            if (!nifArrendador) {
+                showStatus('Por favor, introduce el NIF del arrendador.', 'info');
+                return;
+            }
+
+            try {
+                const chatResponse = await fetch(`${API_BASE_URL}/chats/arrendador/${nifArrendador}`, {
+                    credentials: 'include' // IMPORTANTE: Enviar cookies de sesión
+                });
+                if (chatResponse.ok) {
+                    const chatData = await chatResponse.json();
+                    currentChatId = chatData.idChat;
+                    showStatus(`Unido al chat: ${chatData.nombreChat}`, 'success');
+                    loadChatMessages(currentChatId);
+                } else if (chatResponse.status === 404) {
+                    showStatus(`No se encontró un chat para el NIF ${nifArrendador}. Asegúrate de que tienes un contrato registrado con ese NIF.`, 'info');
+                    currentChatId = null;
+                    chatMessagesDiv.innerHTML = '<div class="chat-message-bubble">No hay chat para este NIF. Registra un contrato con este NIF para crearlo o unirte.</div>';
+                } else {
+                    const errorData = await chatResponse.json();
+                    showStatus(`Error al obtener chat: ${errorData.message || chatResponse.statusText}`, 'error');
+                    currentChatId = null;
+                }
+            } catch (error) {
+                console.error('Error de red al unirse al chat:', error);
+                showStatus('Error de conexión al intentar unirse al chat. Inténtalo de nuevo más tarde.', 'error');
+                currentChatId = null;
+            }
+        });
+
+        // Función para cargar mensajes del chat
+        async function loadChatMessages(chatId) {
+            if (!chatId) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/chats/${chatId}/messages`, {
+                    credentials: 'include' // IMPORTANTE: Enviar cookies de sesión
+                });
+                if (response.ok) {
+                    const messages = await response.json();
+                    chatMessagesDiv.innerHTML = ''; // Limpiar mensajes existentes
+                    if (messages.length === 0) {
+                        addMessageToChat('Sistema', 'No hay mensajes en este chat todavía. ¡Sé el primero en saludar!');
+                    } else {
+                        messages.forEach(msg => {
+                            // Asume que msg.persona.nombre y msg.contenido existen
+                            const isCurrentUser = msg.persona.idPersona === currentUserId;
+                            addMessageToChat(msg.persona.nombre, msg.contenido, isCurrentUser);
+                        });
+                    }
+                } else {
+                    const errorData = await response.json();
+                    showStatus(`Error al cargar mensajes: ${errorData.message || response.statusText}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error de red al cargar mensajes:', error);
+                showStatus('Error de conexión al cargar mensajes.', 'error');
+            }
+        }
+
+        // --- Funcionalidad de Enviar Mensaje ---
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentChatId || !currentUserId) {
+                showStatus('Debes estar en un chat y haber iniciado sesión para enviar mensajes.', 'info');
+                return;
+            }
+
+            const messageContent = chatInput.value.trim();
+            if (!messageContent) {
+                showStatus('El mensaje no puede estar vacío.', 'info');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/chats/${currentChatId}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contenido: messageContent,
+                        // No necesitas idChat ni idPersona en el body si el backend los obtiene de la sesión
+                        // O si el controlador los espera en el path/body, asegúrate de que coincidan.
+                        // Para esta demo, el backend espera el objeto Mensaje completo.
+                        chat: { idChat: currentChatId },
+                        persona: { idPersona: currentUserId }
+                    }),
+                    credentials: 'include' // IMPORTANTE: Enviar cookies de sesión
+                });
+
+                if (response.ok) {
+                    // const newMessage = await response.json(); // Si el backend devuelve el objeto completo
+                    chatInput.value = ''; // Limpiar input
+                    loadChatMessages(currentChatId); // Recargar todos los mensajes para ver el propio y los nuevos de otros
+                } else {
+                    const errorData = await response.json();
+                    showStatus(`Error al enviar mensaje: ${errorData.message || response.statusText}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error de red al enviar mensaje:', error);
+                showStatus('Error de conexión al enviar mensaje. Inténtalo de nuevo más tarde.', 'error');
+            }
+        });
+
+        // Inicializar estado al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            currentUserId = localStorage.getItem('currentUserId');
+            currentUserName = localStorage.getItem('currentUserName');
+            updateAuthUI(); // Actualizar UI al cargar la página
+        });
+
+    </script>
+</body>
+</html>

@@ -9,7 +9,6 @@ com/proyectofinal/repository/ContratoRepository.class
 com/proyectofinal/model/Chat.class
 com/proyectofinal/service/PersonaService.class
 com/proyectofinal/model/Rol.class
-com/proyectofinal/model/ContratoParticipante$TipoParticipante.class
 com/proyectofinal/repository/UbicacionRepository.class
 com/proyectofinal/repository/ChatRepository.class
 com/proyectofinal/service/impl/CustomUserDetailsService.class
@@ -22,7 +21,10 @@ com/proyectofinal/service/ContratoService.class
 com/proyectofinal/repository/MensajeRepository.class
 com/proyectofinal/repository/ContratoParticipanteRepository.class
 com/proyectofinal/repository/HistorialPrecioRepository.class
+com/proyectofinal/controller/ContratoController.class
 com/proyectofinal/model/ContratoParticipante.class
+com/proyectofinal/controller/PersonaController$LoginRequest.class
+com/proyectofinal/controller/UbicacionController.class
 com/proyectofinal/service/impl/ContratoServiceImpl.class
 com/proyectofinal/service/impl/PersonaServiceImpl.class
 com/proyectofinal/runner/DemoRunner.class

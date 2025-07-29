@@ -9,6 +9,7 @@ package com.proyectofinal.model;
  * @author antoine
  */
 
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -21,38 +22,36 @@ public class Mensaje {
     @Column(name = "id_mensaje")
     private Long idMensaje;
 
-    @Column(name = "contenido", columnDefinition = "LONGTEXT", nullable = false)
+    @Column(columnDefinition = "LONGTEXT", nullable = false)
     private String contenido;
 
-    @Column(name = "fechaEnvio", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime fechaEnvio;
 
-    @Column(name = "fechaEliminacion")
-    private LocalDateTime fechaEliminacion;
+    private LocalDateTime fechaEliminacion; // Para borrado lógico
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // Mantener LAZY para el chat, si no hay problemas
     @JoinColumn(name = "id_chat", nullable = false)
     private Chat chat;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_persona", nullable = false)
-    private Persona remitente; // El remitente del mensaje
+    @ManyToOne(fetch = FetchType.EAGER) // CAMBIO CLAVE AQUÍ: Carga EAGER para la Persona
+    @JoinColumn(name = "id_persona", nullable = false) // Remitente del mensaje
+    private Persona persona; // Asegúrate de que este campo se llama 'persona' y no 'remitente' si es el caso en tu DB
 
-    // Constructor por defecto (necesario para JPA)
+    // --- Constructores ---
     public Mensaje() {
     }
 
-    // Constructor con todos los campos (sin ID)
-    public Mensaje(Long idMensaje, String contenido, LocalDateTime fechaEnvio, LocalDateTime fechaEliminacion, Chat chat, Persona remitente) {
+    public Mensaje(Long idMensaje, String contenido, LocalDateTime fechaEnvio, LocalDateTime fechaEliminacion, Chat chat, Persona persona) {
         this.idMensaje = idMensaje;
         this.contenido = contenido;
         this.fechaEnvio = fechaEnvio;
         this.fechaEliminacion = fechaEliminacion;
         this.chat = chat;
-        this.remitente = remitente;
+        this.persona = persona;
     }
 
-    // Getters y Setters
+    // --- Getters y Setters ---
     public Long getIdMensaje() {
         return idMensaje;
     }
@@ -93,11 +92,11 @@ public class Mensaje {
         this.chat = chat;
     }
 
-    public Persona getRemitente() {
-        return remitente;
+    public Persona getPersona() { // Getter para el campo 'persona'
+        return persona;
     }
 
-    public void setRemitente(Persona remitente) {
-        this.remitente = remitente;
+    public void setPersona(Persona persona) { // Setter para el campo 'persona'
+        this.persona = persona;
     }
 }

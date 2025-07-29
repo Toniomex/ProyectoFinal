@@ -11,41 +11,36 @@ package com.proyectofinal.model;
 
 
 import jakarta.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "ContratoParticipantes")
-public class ContratoParticipante {
+public class ContratoParticipante implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_contrato_participante")
     private Long idContratoParticipante;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_contrato", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "idContrato", nullable = false)
     private Contrato contrato;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_persona") // Puede ser null si el participante es un arrendador por NIF
+    @ManyToOne
+    @JoinColumn(name = "idPersona", nullable = true)
     private Persona persona;
 
-    @Column(name = "nifArrendador", length = 255) // Solo para arrendadores, si no son Personas registradas
-    private String NIFArrendador;
+    private String NIFArrendador; // Campo con NIF en mayúsculas
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipoParticipante", nullable = false)
-    private TipoParticipante tipoParticipante;
+    @Column(nullable = false)
+    private TipoParticipante tipoParticipante; // Referencia al enum global
 
-    public enum TipoParticipante {
-        INQUILINO,
-        ARRENDADOR
-    }
-
-    // Constructor por defecto (necesario para JPA)
+    // Constructor sin argumentos
     public ContratoParticipante() {
     }
 
-    // Constructor con todos los campos (sin ID)
+    // Constructor con todos los argumentos
     public ContratoParticipante(Long idContratoParticipante, Contrato contrato, Persona persona, String NIFArrendador, TipoParticipante tipoParticipante) {
         this.idContratoParticipante = idContratoParticipante;
         this.contrato = contrato;
@@ -79,11 +74,13 @@ public class ContratoParticipante {
         this.persona = persona;
     }
 
+    // Getter para NIFArrendador (NIF en mayúsculas)
     public String getNIFArrendador() {
         return NIFArrendador;
     }
 
-    public void setNIFArrendador(String NIFArrendador) {
+    // Setter para NIFArrendador (NIF en mayúsculas)
+    public void setNIFArrendador(String NIFArrendador) { // Corregido: NIF en mayúsculas
         this.NIFArrendador = NIFArrendador;
     }
 

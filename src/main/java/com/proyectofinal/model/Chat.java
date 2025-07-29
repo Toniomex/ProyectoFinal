@@ -10,46 +10,44 @@ package com.proyectofinal.model;
  */
 
 import jakarta.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashSet; // Importar HashSet
+import java.util.Set;     // Importar Set
 
 @Entity
 @Table(name = "Chats")
-public class Chat {
+public class Chat implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_chat")
     private Long idChat;
 
-    @Column(name = "nombreChat")
     private String nombreChat;
 
-    @Column(name = "id_arrendador", nullable = false) // NIF del arrendador
+    @Column(nullable = false)
     private String idArrendador;
 
-    @Column(name = "fechaCreacion", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime fechaCreacion;
 
-    @Column(name = "fechaEliminacion")
     private LocalDateTime fechaEliminacion;
 
-    // Relación ManyToMany con Persona a través de ChatParticipantes
+    // Relación Many-to-Many con Persona para los participantes del chat
     @ManyToMany
     @JoinTable(
-        name = "chat_participantes",
-        joinColumns = @JoinColumn(name = "id_chat"),
-        inverseJoinColumns = @JoinColumn(name = "id_persona")
+        name = "chat_participantes", // Nombre de la tabla de unión
+        joinColumns = @JoinColumn(name = "id_chat"), // Columna FK de esta entidad (Chat)
+        inverseJoinColumns = @JoinColumn(name = "id_persona") // Columna FK de la entidad remota (Persona)
     )
-    private Set<Persona> participantes = new HashSet<>();
+    private Set<Persona> participantes = new HashSet<>(); // Inicializar para evitar NullPointerException
 
-
-    // Constructor por defecto (necesario para JPA)
+    // Constructor sin argumentos
     public Chat() {
     }
 
-    // Constructor con todos los campos (sin ID)
+    // Constructor con todos los argumentos (sin participantes, se añaden con addParticipante)
     public Chat(Long idChat, String nombreChat, String idArrendador, LocalDateTime fechaCreacion, LocalDateTime fechaEliminacion) {
         this.idChat = idChat;
         this.nombreChat = nombreChat;
@@ -107,10 +105,12 @@ public class Chat {
         this.participantes = participantes;
     }
 
+    // Método de utilidad para añadir un participante
     public void addParticipante(Persona persona) {
         this.participantes.add(persona);
     }
 
+    // Método de utilidad para remover un participante
     public void removeParticipante(Persona persona) {
         this.participantes.remove(persona);
     }

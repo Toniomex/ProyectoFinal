@@ -11,21 +11,26 @@ package com.proyectofinal.runner;
 
 import com.proyectofinal.model.*;
 import com.proyectofinal.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional; // Importar Transactional
-
+import org.springframework.beans.factory.annotation.Autowired;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 /**
- * Clase que implementa CommandLineRunner para ejecutar código de demostración
- * al inicio de la aplicación Spring Boot.
- * Esta clase se encarga de registrar usuarios, crear ubicaciones, contratos,
- * chats y mensajes para probar las funcionalidades del backend.
+ * Clase DemoRunner:
+ * Este componente se ejecuta automáticamente al iniciar la aplicación Spring Boot.
+ * Su propósito es demostrar y verificar las funcionalidades clave del backend
+ * (registro de usuarios, creación de contratos con lógica de chat,
+ * envío y recuperación de mensajes) interactuando directamente con la capa de servicios.
+ *
+ * NOTA IMPORTANTE: Este código es para fines de demostración y prueba en desarrollo.
+ * Debería ser eliminado o deshabilitado (ej. comentando @Component o usando perfiles de Spring)
+ * antes de desplegar la aplicación en un entorno de producción, ya que creará datos
+ * cada vez que la aplicación se inicie.
  */
 @Component
 public class DemoRunner implements CommandLineRunner {
@@ -45,136 +50,259 @@ public class DemoRunner implements CommandLineRunner {
     @Autowired
     private MensajeService mensajeService;
 
-    /**
-     * Este método se ejecuta automáticamente cuando la aplicación Spring Boot se inicia.
-     * Está anotado con @Transactional para asegurar que todas las operaciones de base de datos
-     * dentro de este método se ejecuten como una única transacción y se guarden al finalizar.
-     *
-     * @param args Argumentos de línea de comandos (no utilizados en este caso).
-     * @throws Exception Si ocurre algún error durante la ejecución de la demostración.
-     */
     @Override
-    @Transactional // ¡Importante! Asegura que todas las operaciones se guarden en la DB.
     public void run(String... args) throws Exception {
         System.out.println("\n--- Iniciando Demo de Funcionalidades del Backend ---");
         System.out.println("-----------------------------------------------------");
 
-        // --- 1. Registrando Personas (Inquilinos) ---
+        // 1. Registrar Personas (Inquilinos)
         System.out.println("\n--- 1. Registrando Personas (Inquilinos) ---");
-        // Los constructores de Persona, Ubicacion y Contrato ahora coinciden con las definiciones explícitas
-        Persona alice = personaService.registrarPersona(new Persona(null, "Alice Smith", "alice@example.com", "111222333", "password123", Persona.Rol.INQUILINO));
-        System.out.println("✔ Inquilino registrado: " + alice.getNombre() + " (ID: " + alice.getIdPersona() + ")");
-
-        Persona bob = personaService.registrarPersona(new Persona(null, "Bob Johnson", "bob@example.com", "444555666", "password456", Persona.Rol.INQUILINO));
-        System.out.println("✔ Inquilino registrado: " + bob.getNombre() + " (ID: " + bob.getIdPersona() + ")");
-
-        Persona charlie = personaService.registrarPersona(new Persona(null, "Charlie Brown", "charlie@example.com", "777888999", "password789", Persona.Rol.INQUILINO));
-        System.out.println("✔ Inquilino registrado: " + charlie.getNombre() + " (ID: " + charlie.getIdPersona() + ")");
-
-        // --- 2. Autenticando Persona (solo para probar el servicio de seguridad) ---
-        System.out.println("\n--- 2. Autenticando Persona ---");
+        // Las contraseñas se encriptarán automáticamente en PersonaService
+        Persona inquilino1 = new Persona();
+        inquilino1.setNombre("Alice Smith");
+        inquilino1.setMail("alice@example.com");
+        inquilino1.setContraseña("password123"); // Contraseña en texto plano
+        inquilino1.setTelefono("111222333");
+        inquilino1.setRol(Persona.Rol.INQUILINO);
         try {
-            personaService.autenticarPersona("alice@example.com", "password123");
-            System.out.println("✔ Autenticación exitosa para: Alice Smith");
+            inquilino1 = personaService.registrarPersona(inquilino1);
+            System.out.println("✔ Inquilino registrado: " + inquilino1.getNombre() + " (ID: " + inquilino1.getIdPersona() + ")");
         } catch (Exception e) {
-            System.err.println("✖ Error de autenticación para Alice Smith: " + e.getMessage());
+            System.err.println("✖ Error al registrar inquilino1: " + e.getMessage());
+            // Si ya existe, intentar recuperarlo para continuar la demo
+            Optional<Persona> existingPersona = personaService.obtenerPersonaPorMail("alice@example.com");
+            if (existingPersona.isPresent()) {
+                inquilino1 = existingPersona.get();
+                System.out.println("   (Inquilino Alice ya existía, recuperado: ID " + inquilino1.getIdPersona() + ")");
+            } else {
+                System.err.println("   (No se pudo registrar ni recuperar a Alice)");
+                return;
+            }
         }
 
-        // --- 3. Creando Ubicaciones ---
+        Persona inquilino2 = new Persona();
+        inquilino2.setNombre("Bob Johnson");
+        inquilino2.setMail("bob@example.com");
+        inquilino2.setContraseña("securepass"); // Contraseña en texto plano
+        inquilino2.setTelefono("444555666");
+        inquilino2.setRol(Persona.Rol.INQUILINO);
+        try {
+            inquilino2 = personaService.registrarPersona(inquilino2);
+            System.out.println("✔ Inquilino registrado: " + inquilino2.getNombre() + " (ID: " + inquilino2.getIdPersona() + ")");
+        } catch (Exception e) {
+            System.err.println("✖ Error al registrar inquilino2: " + e.getMessage());
+            Optional<Persona> existingPersona = personaService.obtenerPersonaPorMail("bob@example.com");
+            if (existingPersona.isPresent()) {
+                inquilino2 = existingPersona.get();
+                System.out.println("   (Inquilino Bob ya existía, recuperado: ID " + inquilino2.getIdPersona() + ")");
+            } else {
+                System.err.println("   (No se pudo registrar ni recuperar a Bob)");
+                return;
+            }
+        }
+
+        Persona inquilino3 = new Persona();
+        inquilino3.setNombre("Charlie Brown");
+        inquilino3.setMail("charlie@example.com");
+        inquilino3.setContraseña("charliepass"); // Contraseña en texto plano
+        inquilino3.setTelefono("777888999");
+        inquilino3.setRol(Persona.Rol.INQUILINO);
+        try {
+            inquilino3 = personaService.registrarPersona(inquilino3);
+            System.out.println("✔ Inquilino registrado: " + inquilino3.getNombre() + " (ID: " + inquilino3.getIdPersona() + ")");
+        } catch (Exception e) {
+            System.err.println("✖ Error al registrar inquilino3: " + e.getMessage());
+            Optional<Persona> existingPersona = personaService.obtenerPersonaPorMail("charlie@example.com");
+            if (existingPersona.isPresent()) {
+                inquilino3 = existingPersona.get();
+                System.out.println("   (Inquilino Charlie ya existía, recuperado: ID " + inquilino3.getIdPersona() + ")");
+            } else {
+                System.err.println("   (No se pudo registrar ni recuperar a Charlie)");
+                return;
+            }
+        }
+
+        // 2. Autenticar Persona (usando el método del servicio para verificar, no el de Spring Security directamente aquí)
+        System.out.println("\n--- 2. Autenticando Persona ---");
+        boolean isAuthenticated = personaService.autenticarPersona("alice@example.com", "password123").isPresent();
+        if (isAuthenticated) {
+            System.out.println("✔ Autenticación exitosa para: Alice Smith");
+        } else {
+            System.out.println("✖ Autenticación fallida para alice@example.com");
+        }
+
+        // 3. Crear Ubicaciones
         System.out.println("\n--- 3. Creando Ubicaciones ---");
-        Ubicacion ubicacion1 = ubicacionService.guardarUbicacion(new Ubicacion(null, "Calle Falsa", "123", null, null, null, null, "08001", "Barcelona", "Barcelona", "España"));
-        System.out.println("✔ Ubicación creada: " + ubicacion1.getCalle() + " (ID: " + ubicacion1.getIdUbicacion() + ")");
+        Ubicacion ubicacion1 = new Ubicacion();
+        ubicacion1.setCalle("Calle Falsa");
+        ubicacion1.setNumeroCalle("123");
+        ubicacion1.setCiudad("Barcelona");
+        ubicacion1.setProvincia("Barcelona");
+        ubicacion1.setCodigoPostal("08001");
+        ubicacion1.setPais("España");
+        try {
+            ubicacion1 = ubicacionService.guardarUbicacion(ubicacion1);
+            System.out.println("✔ Ubicación creada: " + ubicacion1.getCalle() + " (ID: " + ubicacion1.getIdUbicacion() + ")");
+        } catch (Exception e) {
+            System.err.println("✖ Error al crear ubicación1: " + e.getMessage());
+            return;
+        }
 
-        Ubicacion ubicacion2 = ubicacionService.guardarUbicacion(new Ubicacion(null, "Avenida Siempre Viva", "742", null, null, null, null, "28001", "Madrid", "Madrid", "España"));
-        System.out.println("✔ Ubicación creada: " + ubicacion2.getCalle() + " (ID: " + ubicacion2.getIdUbicacion() + ")");
+        Ubicacion ubicacion2 = new Ubicacion();
+        ubicacion2.setCalle("Avenida Siempre Viva");
+        ubicacion2.setNumeroCalle("742");
+        ubicacion2.setCiudad("Madrid");
+        ubicacion2.setProvincia("Madrid");
+        ubicacion2.setCodigoPostal("28001");
+        ubicacion2.setPais("España");
+        try {
+            ubicacion2 = ubicacionService.guardarUbicacion(ubicacion2);
+            System.out.println("✔ Ubicación creada: " + ubicacion2.getCalle() + " (ID: " + ubicacion2.getIdUbicacion() + ")");
+        } catch (Exception e) {
+            System.err.println("✖ Error al crear ubicación2: " + e.getMessage());
+            return;
+        }
 
-        // --- 4. Creando Contratos y verificando Chats ---
+        // 4. Crear Contratos (y verificar creación/unión de Chats)
         System.out.println("\n--- 4. Creando Contratos y verificando Chats ---");
+        String nifArrendadorA = "A12345678";
+        String nifArrendadorB = "B98765432";
 
-        // Contrato para Alice con arrendador A12345678
-        // Crear el objeto Contrato usando el constructor por defecto y setters
-        Contrato contrato1Base = new Contrato();
-        contrato1Base.setPrecio(new BigDecimal("1000.00"));
-        contrato1Base.setTipo("Vivienda");
-        contrato1Base.setFechaInicio(LocalDate.of(2023, 1, 1));
-        contrato1Base.setFechaFinal(LocalDate.of(2024, 1, 1));
-        contrato1Base.setUbicacion(ubicacion1);
-        // La duración es null en el ejemplo original, no la establecemos si no es obligatoria
-        // contrato1Base.setDuracion(null);
+        Contrato contrato1 = new Contrato();
+        contrato1.setFechaInicio(LocalDate.of(2023, 1, 1));
+        contrato1.setFechaFinal(LocalDate.of(2024, 1, 1));
+        contrato1.setPrecio(new BigDecimal("1000.00"));
+        contrato1.setTipo("Vivienda");
+        contrato1.setUbicacion(ubicacion1);
+        contrato1.setIdArrendadorNIF(nifArrendadorA); // Usar el nombre correcto del setter
+        contrato1.setInquilino(inquilino1);
+        try {
+            contrato1 = contratoService.crearContrato(contrato1);
+            System.out.println("✔ Contrato 1 creado para " + inquilino1.getNombre() + " con arrendador " + nifArrendadorA + " (ID: " + contrato1.getIdContrato() + ")");
+        } catch (Exception e) {
+            System.err.println("✖ Error al crear contrato1: " + e.getMessage());
+        }
 
-        Contrato contrato1 = contratoService.crearContrato(contrato1Base, alice.getIdPersona(), "A12345678");
-        System.out.println("✔ Contrato 1 creado para Alice Smith con arrendador A12345678 (ID: " + contrato1.getIdContrato() + ")");
+        Contrato contrato2 = new Contrato();
+        contrato2.setFechaInicio(LocalDate.of(2023, 3, 1));
+        contrato2.setFechaFinal(LocalDate.of(2024, 3, 1));
+        contrato2.setPrecio(new BigDecimal("1100.00"));
+        contrato2.setTipo("Vivienda");
+        contrato2.setUbicacion(ubicacion1);
+        contrato2.setIdArrendadorNIF(nifArrendadorA); // Usar el nombre correcto del setter
+        contrato2.setInquilino(inquilino2);
+        try {
+            contrato2 = contratoService.crearContrato(contrato2);
+            System.out.println("✔ Contrato 2 creado para " + inquilino2.getNombre() + " con arrendador " + nifArrendadorA + " (ID: " + contrato2.getIdContrato() + ")");
+        } catch (Exception e) {
+            System.err.println("✖ Error al crear contrato2: " + e.getMessage());
+        }
 
-        // Contrato para Bob con el mismo arrendador A12345678
-        Contrato contrato2Base = new Contrato();
-        contrato2Base.setPrecio(new BigDecimal("1100.00"));
-        contrato2Base.setTipo("Vivienda");
-        contrato2Base.setFechaInicio(LocalDate.of(2023, 3, 1));
-        contrato2Base.setFechaFinal(LocalDate.of(2024, 3, 1));
-        contrato2Base.setUbicacion(ubicacion1);
+        Contrato contrato3 = new Contrato();
+        contrato3.setFechaInicio(LocalDate.of(2024, 1, 1));
+        contrato3.setFechaFinal(LocalDate.of(2025, 1, 1));
+        contrato3.setPrecio(new BigDecimal("950.00"));
+        contrato3.setTipo("Local");
+        contrato3.setUbicacion(ubicacion2);
+        contrato3.setIdArrendadorNIF(nifArrendadorB); // Usar el nombre correcto del setter
+        contrato3.setInquilino(inquilino3);
+        try {
+            contrato3 = contratoService.crearContrato(contrato3);
+            System.out.println("✔ Contrato 3 creado para " + inquilino3.getNombre() + " con arrendador " + nifArrendadorB + " (ID: " + contrato3.getIdContrato() + ")");
+        } catch (Exception e) {
+            System.err.println("✖ Error al crear contrato3: " + e.getMessage());
+        }
 
-        Contrato contrato2 = contratoService.crearContrato(contrato2Base, bob.getIdPersona(), "A12345678");
-        System.out.println("✔ Contrato 2 creado para Bob Johnson con arrendador A12345678 (ID: " + contrato2.getIdContrato() + ")");
+        System.out.println("\n--- Verificando Chats Creados/Unidos ---");
+        Optional<Chat> chatA = chatService.obtenerChatPorNifArrendador(nifArrendadorA);
+        if (chatA.isPresent()) {
+            System.out.println("✔ Chat encontrado para arrendador " + nifArrendadorA + ": " + chatA.get().getNombreChat() + " (ID: " + chatA.get().getIdChat() + ")");
+        } else {
+            System.err.println("✖ ERROR: No se encontró chat para arrendador " + nifArrendadorA);
+        }
 
-        // Contrato para Charlie con un nuevo arrendador B98765432
-        Contrato contrato3Base = new Contrato();
-        contrato3Base.setPrecio(new BigDecimal("950.00"));
-        contrato3Base.setTipo("Local");
-        contrato3Base.setFechaInicio(LocalDate.of(2024, 1, 1));
-        contrato3Base.setFechaFinal(LocalDate.of(2025, 1, 1));
-        contrato3Base.setUbicacion(ubicacion2);
+        Optional<Chat> chatB = chatService.obtenerChatPorNifArrendador(nifArrendadorB);
+        if (chatB.isPresent()) {
+            System.out.println("✔ Chat encontrado para arrendador " + nifArrendadorB + ": " + chatB.get().getNombreChat() + " (ID: " + chatB.get().getIdChat() + ")");
+        } else {
+            System.err.println("✖ ERROR: No se encontró chat para arrendador " + nifArrendadorB);
+        }
 
-        Contrato contrato3 = contratoService.crearContrato(contrato3Base, charlie.getIdPersona(), "B98765432");
-        System.out.println("✔ Contrato 3 creado para Charlie Brown con arrendador B98765432 (ID: " + contrato3.getIdContrato() + ")");
-
-        // --- Verificando Chats Creados/Unidos ---
-        Optional<Chat> chatA = chatService.obtenerChatPorIdArrendador("A12345678");
-        chatA.ifPresent(chat -> System.out.println("✔ Chat encontrado para arrendador A12345678: " + chat.getNombreChat() + " (ID: " + chat.getIdChat() + ")"));
-
-        Optional<Chat> chatB = chatService.obtenerChatPorIdArrendador("B98765432");
-        chatB.ifPresent(chat -> System.out.println("✔ Chat encontrado para arrendador B98765432: " + chat.getNombreChat() + " (ID: " + chat.getIdChat() + ")"));
-
-        // --- 5. Enviando Mensajes ---
+        // 5. Enviar Mensajes
         System.out.println("\n--- 5. Enviando Mensajes ---");
         if (chatA.isPresent()) {
-            // Se llama a enviarMensaje con los IDs y el contenido, como se actualizó en MensajeService
-            Mensaje msgAlice = mensajeService.enviarMensaje(chatA.get().getIdChat(), alice.getIdPersona(), "Hola a todos, soy Alice! Este es el chat del arrendador A.");
-            System.out.println("✔ Mensaje de Alice enviado al chat " + chatA.get().getNombreChat());
+            Mensaje mensaje1 = new Mensaje();
+            mensaje1.setContenido("Hola a todos, soy Alice! Este es el chat del arrendador A.");
+            mensaje1.setFechaEnvio(LocalDateTime.now());
+            mensaje1.setChat(chatA.get());
+            mensaje1.setPersona(inquilino1); // Usar setPersona para el campo 'persona'
+            try {
+                mensajeService.enviarMensaje(mensaje1);
+                System.out.println("✔ Mensaje de Alice enviado al chat " + chatA.get().getNombreChat());
+            } catch (Exception e) {
+                System.err.println("✖ Error al enviar mensaje de Alice: " + e.getMessage());
+            }
 
-            Mensaje msgBob = mensajeService.enviarMensaje(chatA.get().getIdChat(), bob.getIdPersona(), "Qué tal, soy Bob. Un gusto estar aquí en el chat de A.");
-            System.out.println("✔ Mensaje de Bob enviado al chat " + chatA.get().getNombreChat());
+            Mensaje mensaje2 = new Mensaje();
+            mensaje2.setContenido("Qué tal, soy Bob. Un gusto estar aquí en el chat de A.");
+            mensaje2.setFechaEnvio(LocalDateTime.now().plusMinutes(1));
+            mensaje2.setChat(chatA.get());
+            mensaje2.setPersona(inquilino2); // Usar setPersona para el campo 'persona'
+            try {
+                mensajeService.enviarMensaje(mensaje2);
+                System.out.println("✔ Mensaje de Bob enviado al chat " + chatA.get().getNombreChat());
+            } catch (Exception e) {
+                System.err.println("✖ Error al enviar mensaje de Bob: " + e.getMessage());
+            }
+        } else {
+            System.err.println("✖ No se puede enviar mensajes al chat A, no se encontró.");
         }
 
         if (chatB.isPresent()) {
-            Mensaje msgCharlie = mensajeService.enviarMensaje(chatB.get().getIdChat(), charlie.getIdPersona(), "Saludos desde el chat del arrendador B, soy Charlie.");
-            System.out.println("✔ Mensaje de Charlie enviado al chat " + chatB.get().getNombreChat());
+            Mensaje mensaje3 = new Mensaje();
+            mensaje3.setContenido("Saludos desde el chat del arrendador B, soy Charlie.");
+            mensaje3.setFechaEnvio(LocalDateTime.now());
+            mensaje3.setChat(chatB.get());
+            mensaje3.setPersona(inquilino3); // Usar setPersona para el campo 'persona'
+            try {
+                mensajeService.enviarMensaje(mensaje3);
+                System.out.println("✔ Mensaje de Charlie enviado al chat " + chatB.get().getNombreChat());
+            } catch (Exception e) {
+                System.err.println("✖ Error al enviar mensaje de Charlie: " + e.getMessage());
+            }
+        } else {
+            System.err.println("✖ No se puede enviar mensajes al chat B, no se encontró.");
         }
 
-        // --- 6. Recuperando Mensajes ---
+        // 6. Recuperar Mensajes
         System.out.println("\n--- 6. Recuperando Mensajes ---");
         if (chatA.isPresent()) {
             System.out.println("Mensajes del chat " + chatA.get().getNombreChat() + ":");
-            mensajeService.obtenerMensajesPorChat(chatA.get().getIdChat()).forEach(msg ->
-                // getRemitente() ahora está disponible en la clase Mensaje actualizada
-                System.out.println("  [" + msg.getFechaEnvio().withNano(0) + "] " + msg.getRemitente().getNombre() + ": " + msg.getContenido())
-            );
+            List<Mensaje> mensajesChatA = mensajeService.obtenerMensajesPorChat(chatA.get().getIdChat());
+            if (mensajesChatA.isEmpty()) {
+                System.out.println("   (No hay mensajes en este chat)");
+            } else {
+                for (Mensaje msg : mensajesChatA) {
+                    // Acceso a getPersona().getNombre() debería funcionar con FetchType.EAGER
+                    System.out.println("  [" + msg.getFechaEnvio() + "] " + msg.getPersona().getNombre() + ": " + msg.getContenido());
+                }
+            }
         }
 
         if (chatB.isPresent()) {
             System.out.println("Mensajes del chat " + chatB.get().getNombreChat() + ":");
-            mensajeService.obtenerMensajesPorChat(chatB.get().getIdChat()).forEach(msg ->
-                // getRemitente() ahora está disponible en la clase Mensaje actualizada
-                System.out.println("  [" + msg.getFechaEnvio().withNano(0) + "] " + msg.getRemitente().getNombre() + ": " + msg.getContenido())
-            );
+            List<Mensaje> mensajesChatB = mensajeService.obtenerMensajesPorChat(chatB.get().getIdChat());
+            if (mensajesChatB.isEmpty()) {
+                System.out.println("   (No hay mensajes en este chat)");
+            } else {
+                for (Mensaje msg : mensajesChatB) {
+                    // Acceso a getPersona().getNombre() debería funcionar con FetchType.EAGER
+                    System.out.println("  [" + msg.getFechaEnvio() + "] " + msg.getPersona().getNombre() + ": " + msg.getContenido());
+                }
+            }
         }
 
         System.out.println("\n--- Demo de Funcionalidades del Backend Finalizada ---");
-
-        // Pequeña pausa para asegurar que la transacción se complete antes de que la aplicación se apague
-        try {
-            Thread.sleep(2000); // Espera 2 segundos
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        System.out.println("-----------------------------------------------------");
     }
 }
