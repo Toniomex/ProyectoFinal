@@ -10,15 +10,13 @@ package com.proyectofinal.service;
  */
 import com.proyectofinal.model.Chat;
 import com.proyectofinal.model.Persona;
+import java.util.List;
 import java.util.Optional;
 
-/**
- * Interfaz de servicio para la gestión de Chats.
- * Define las operaciones de negocio relacionadas con los chats grupales.
- */
 public interface ChatService {
-    Optional<Chat> obtenerChatPorNifArrendador(String nifArrendador);
-    Chat crearChat(String nifArrendador, String nombreChat);
-    void añadirInquilinoAchat(Long idChat, Persona inquilino); // Cambiado a Persona para consistencia
-    Optional<Chat> obtenerChatPorId(Long idChat); // Añadido para el DemoRunner
+    Optional<Chat> obtenerChatPorIdArrendador(String idArrendador);
+    Chat crearOObtenerChat(String idArrendador, String nombreChat, Persona inquilino);
+    Chat agregarInquilinoAChat(Long idChat, Long idPersona);
+    List<Chat> obtenerTodosLosChats();
+    Optional<Chat> obtenerChatPorId(Long idChat);
 }

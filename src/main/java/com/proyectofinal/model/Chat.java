@@ -23,30 +23,42 @@ public class Chat {
     @Column(name = "id_chat")
     private Long idChat;
 
+    @Column(name = "nombreChat")
     private String nombreChat;
 
-    @Column(name = "id_arrendador", nullable = false) // NIF del arrendador asociado al chat
+    @Column(name = "id_arrendador", nullable = false) // NIF del arrendador
     private String idArrendador;
 
-    @Column(nullable = false)
+    @Column(name = "fechaCreacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
-    private LocalDateTime fechaEliminacion; // Para borrado lógico
+    @Column(name = "fechaEliminacion")
+    private LocalDateTime fechaEliminacion;
 
-    // Relación ManyToMany con Persona para los participantes del chat
+    // Relación ManyToMany con Persona a través de ChatParticipantes
     @ManyToMany
     @JoinTable(
-        name = "chat_participantes", // Nombre de la tabla intermedia
+        name = "chat_participantes",
         joinColumns = @JoinColumn(name = "id_chat"),
         inverseJoinColumns = @JoinColumn(name = "id_persona")
     )
-    private Set<Persona> participantes = new HashSet<>(); // Inicializar para evitar NullPointer
+    private Set<Persona> participantes = new HashSet<>();
 
-    // --- Constructores ---
+
+    // Constructor por defecto (necesario para JPA)
     public Chat() {
     }
 
-    // --- Getters y Setters ---
+    // Constructor con todos los campos (sin ID)
+    public Chat(Long idChat, String nombreChat, String idArrendador, LocalDateTime fechaCreacion, LocalDateTime fechaEliminacion) {
+        this.idChat = idChat;
+        this.nombreChat = nombreChat;
+        this.idArrendador = idArrendador;
+        this.fechaCreacion = fechaCreacion;
+        this.fechaEliminacion = fechaEliminacion;
+    }
+
+    // Getters y Setters
     public Long getIdChat() {
         return idChat;
     }
@@ -95,20 +107,11 @@ public class Chat {
         this.participantes = participantes;
     }
 
-    // Método de conveniencia para añadir un participante
     public void addParticipante(Persona persona) {
-        if (this.participantes == null) {
-            this.participantes = new HashSet<>();
-        }
         this.participantes.add(persona);
-        persona.getChats().add(this); // Asegurar la bidireccionalidad
     }
 
-    // Método de conveniencia para remover un participante
     public void removeParticipante(Persona persona) {
-        if (this.participantes != null) {
-            this.participantes.remove(persona);
-            persona.getChats().remove(this); // Asegurar la bidireccionalidad
-        }
+        this.participantes.remove(persona);
     }
 }

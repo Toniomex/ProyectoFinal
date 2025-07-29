@@ -8,35 +8,35 @@ package com.proyectofinal.model;
  *
  * @author antoine
  */
+
 import jakarta.persistence.*;
-import java.io.Serializable; // Añadir Serializable
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "HistorialPrecios")
-public class HistorialPrecio implements Serializable { // Implementar Serializable
-    private static final long serialVersionUID = 1L; // UID para Serializable
+public class HistorialPrecio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "idHistorialPrecio")
     private Long idHistorialPrecio;
 
-    @ManyToOne // Muchos registros de historial pueden pertenecer a un contrato
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idContrato", nullable = false)
     private Contrato contrato;
 
-    @Column(nullable = false)
+    @Column(name = "precio", precision = 10, scale = 2, nullable = false)
     private BigDecimal precio;
 
-    @Column(nullable = false)
+    @Column(name = "fechaAplicacion", nullable = false)
     private LocalDate fechaAplicacion;
 
-    // Constructor sin argumentos
+    // Constructor por defecto (necesario para JPA)
     public HistorialPrecio() {
     }
 
-    // Constructor con todos los argumentos
+    // Constructor con todos los campos (sin ID)
     public HistorialPrecio(Long idHistorialPrecio, Contrato contrato, BigDecimal precio, LocalDate fechaAplicacion) {
         this.idHistorialPrecio = idHistorialPrecio;
         this.contrato = contrato;

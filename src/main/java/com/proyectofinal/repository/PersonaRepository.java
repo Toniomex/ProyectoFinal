@@ -14,10 +14,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository // Indica que esta interfaz es un componente de repositorio de Spring
+@Repository
 public interface PersonaRepository extends JpaRepository<Persona, Long> {
-    // JpaRepository proporciona métodos CRUD básicos (save, findById, findAll, delete, etc.)
-
-    // Método personalizado para buscar una Persona por su mail (útil para login)
+    // Método para buscar una persona por su correo electrónico
     Optional<Persona> findByMail(String mail);
 }

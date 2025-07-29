@@ -8,24 +8,20 @@ package com.proyectofinal.service.impl;
  *
  * @author antoine
  */
+
 import com.proyectofinal.model.Chat;
 import com.proyectofinal.model.Persona;
 import com.proyectofinal.repository.ChatRepository;
-import com.proyectofinal.repository.PersonaRepository; // Necesario para añadir inquilinos
 import com.proyectofinal.service.ChatService;
+import com.proyectofinal.service.PersonaService; // Para obtener la Persona
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // Importar Transactional
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet; // Para manejar la lista de participantes de forma eficiente
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-/**
- * Implementación del servicio para la gestión de Chats.
- * Contiene la lógica de negocio para crear, obtener y gestionar miembros de chats.
- */
 @Service
 public class ChatServiceImpl implements ChatService {
 
@@ -33,56 +29,60 @@ public class ChatServiceImpl implements ChatService {
     private ChatRepository chatRepository;
 
     @Autowired
-    private PersonaRepository personaRepository; // Para verificar la existencia de la persona
+    private PersonaService personaService; // Para obtener la Persona por ID
 
     @Override
-    public Optional<Chat> obtenerChatPorNifArrendador(String nifArrendador) {
-        return chatRepository.findByIdArrendador(nifArrendador);
+    @Transactional(readOnly = true)
+    public Optional<Chat> obtenerChatPorIdArrendador(String idArrendador) {
+        return chatRepository.findByIdArrendador(idArrendador);
     }
 
     @Override
     @Transactional
-    public Chat crearChat(String nifArrendador, String nombreChat) {
-        Chat chat = new Chat();
-        chat.setNombreChat(nombreChat);
-        chat.setIdArrendador(nifArrendador);
-        chat.setFechaCreacion(LocalDateTime.now());
-        // Inicializar la lista de participantes si no es nula por defecto en la entidad
-        if (chat.getParticipantes() == null) {
-            chat.setParticipantes(new HashSet<>());
-        }
-        return chatRepository.save(chat);
-    }
-
-    @Override
-    @Transactional
-    public void añadirInquilinoAchat(Long idChat, Persona inquilino) {
-        Optional<Chat> chatOptional = chatRepository.findById(idChat);
-        if (chatOptional.isPresent()) {
-            Chat chat = chatOptional.get();
-            // Asegurarse de que la colección de participantes no es nula
-            if (chat.getParticipantes() == null) {
-                chat.setParticipantes(new HashSet<>());
-            }
-
-            // Verificar si el inquilino ya es participante del chat
-            boolean yaEsMiembro = chat.getParticipantes().stream()
-                                    .anyMatch(p -> p.getIdPersona().equals(inquilino.getIdPersona()));
-
-            if (!yaEsMiembro) {
-                // Añadir el inquilino a la lista de participantes del chat
-                chat.getParticipantes().add(inquilino);
-                chatRepository.save(chat); // Guardar el chat para persistir el cambio en la relación
-                System.out.println("DEBUG: Inquilino " + inquilino.getNombre() + " añadido al chat " + chat.getNombreChat());
-            } else {
-                System.out.println("DEBUG: Inquilino " + inquilino.getNombre() + " ya es miembro del chat " + chat.getNombreChat());
-            }
+    public Chat crearOObtenerChat(String idArrendador, String nombreChat, Persona inquilino) {
+        Optional<Chat> existingChat = chatRepository.findByIdArrendador(idArrendador);
+        Chat chat;
+        if (existingChat.isPresent()) {
+            chat = existingChat.get();
+            System.out.println("DEBUG: Chat existente encontrado para NIF " + idArrendador + ": " + chat.getNombreChat());
         } else {
-            System.err.println("ERROR: No se encontró el chat con ID " + idChat + " para añadir al inquilino.");
+            chat = new Chat(null, nombreChat, idArrendador, LocalDateTime.now(), null);
+            chat = chatRepository.save(chat);
+            System.out.println("DEBUG: Nuevo chat creado para NIF " + idArrendador + ": " + chat.getNombreChat());
         }
+
+        // Asegurarse de que el inquilino esté en la lista de participantes del chat
+        if (!chat.getParticipantes().contains(inquilino)) {
+            chat.addParticipante(inquilino);
+            chat = chatRepository.save(chat); // Guardar el chat con el nuevo participante
+            System.out.println("DEBUG: Inquilino " + inquilino.getNombre() + " añadido al chat " + chat.getNombreChat());
+        }
+        return chat;
     }
 
     @Override
+    @Transactional
+    public Chat agregarInquilinoAChat(Long idChat, Long idPersona) {
+        Chat chat = chatRepository.findById(idChat)
+                .orElseThrow(() -> new RuntimeException("Chat no encontrado con ID: " + idChat));
+        Persona persona = personaService.obtenerPersonaPorId(idPersona)
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada con ID: " + idPersona));
+
+        if (!chat.getParticipantes().contains(persona)) {
+            chat.addParticipante(persona);
+            chatRepository.save(chat);
+        }
+        return chat;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Chat> obtenerTodosLosChats() {
+        return chatRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<Chat> obtenerChatPorId(Long idChat) {
         return chatRepository.findById(idChat);
     }

@@ -13,13 +13,9 @@ import com.proyectofinal.model.Mensaje;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Interfaz de servicio para la gestión de Mensajes.
- * Define las operaciones de negocio relacionadas con los mensajes de chat.
- */
 public interface MensajeService {
-    Mensaje enviarMensaje(Mensaje mensaje);
+    Mensaje enviarMensaje(Long idChat, Long idPersona, String contenido); // Cambiado para recibir IDs y contenido
     Optional<Mensaje> obtenerMensajePorId(Long id);
     List<Mensaje> obtenerMensajesPorChat(Long idChat);
-    // Puedes añadir más métodos CRUD si los necesitas (ej. actualizar, eliminar)
+    void eliminarMensaje(Long id);
 }

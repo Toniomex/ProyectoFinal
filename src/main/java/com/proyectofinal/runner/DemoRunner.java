@@ -61,6 +61,7 @@ public class DemoRunner implements CommandLineRunner {
 
         // --- 1. Registrando Personas (Inquilinos) ---
         System.out.println("\n--- 1. Registrando Personas (Inquilinos) ---");
+        // Los constructores de Persona, Ubicacion y Contrato ahora coinciden con las definiciones explícitas
         Persona alice = personaService.registrarPersona(new Persona(null, "Alice Smith", "alice@example.com", "111222333", "password123", Persona.Rol.INQUILINO));
         System.out.println("✔ Inquilino registrado: " + alice.getNombre() + " (ID: " + alice.getIdPersona() + ")");
 
@@ -89,16 +90,41 @@ public class DemoRunner implements CommandLineRunner {
 
         // --- 4. Creando Contratos y verificando Chats ---
         System.out.println("\n--- 4. Creando Contratos y verificando Chats ---");
+
         // Contrato para Alice con arrendador A12345678
-        Contrato contrato1 = contratoService.crearContrato(new Contrato(null, new BigDecimal("1000.00"), null, "Vivienda", LocalDate.of(2023, 1, 1), LocalDate.of(2024, 1, 1), ubicacion1), alice.getIdPersona(), "A12345678");
+        // Crear el objeto Contrato usando el constructor por defecto y setters
+        Contrato contrato1Base = new Contrato();
+        contrato1Base.setPrecio(new BigDecimal("1000.00"));
+        contrato1Base.setTipo("Vivienda");
+        contrato1Base.setFechaInicio(LocalDate.of(2023, 1, 1));
+        contrato1Base.setFechaFinal(LocalDate.of(2024, 1, 1));
+        contrato1Base.setUbicacion(ubicacion1);
+        // La duración es null en el ejemplo original, no la establecemos si no es obligatoria
+        // contrato1Base.setDuracion(null);
+
+        Contrato contrato1 = contratoService.crearContrato(contrato1Base, alice.getIdPersona(), "A12345678");
         System.out.println("✔ Contrato 1 creado para Alice Smith con arrendador A12345678 (ID: " + contrato1.getIdContrato() + ")");
 
         // Contrato para Bob con el mismo arrendador A12345678
-        Contrato contrato2 = contratoService.crearContrato(new Contrato(null, new BigDecimal("1100.00"), null, "Vivienda", LocalDate.of(2023, 3, 1), LocalDate.of(2024, 3, 1), ubicacion1), bob.getIdPersona(), "A12345678");
+        Contrato contrato2Base = new Contrato();
+        contrato2Base.setPrecio(new BigDecimal("1100.00"));
+        contrato2Base.setTipo("Vivienda");
+        contrato2Base.setFechaInicio(LocalDate.of(2023, 3, 1));
+        contrato2Base.setFechaFinal(LocalDate.of(2024, 3, 1));
+        contrato2Base.setUbicacion(ubicacion1);
+
+        Contrato contrato2 = contratoService.crearContrato(contrato2Base, bob.getIdPersona(), "A12345678");
         System.out.println("✔ Contrato 2 creado para Bob Johnson con arrendador A12345678 (ID: " + contrato2.getIdContrato() + ")");
 
         // Contrato para Charlie con un nuevo arrendador B98765432
-        Contrato contrato3 = contratoService.crearContrato(new Contrato(null, new BigDecimal("950.00"), null, "Local", LocalDate.of(2024, 1, 1), LocalDate.of(2025, 1, 1), ubicacion2), charlie.getIdPersona(), "B98765432");
+        Contrato contrato3Base = new Contrato();
+        contrato3Base.setPrecio(new BigDecimal("950.00"));
+        contrato3Base.setTipo("Local");
+        contrato3Base.setFechaInicio(LocalDate.of(2024, 1, 1));
+        contrato3Base.setFechaFinal(LocalDate.of(2025, 1, 1));
+        contrato3Base.setUbicacion(ubicacion2);
+
+        Contrato contrato3 = contratoService.crearContrato(contrato3Base, charlie.getIdPersona(), "B98765432");
         System.out.println("✔ Contrato 3 creado para Charlie Brown con arrendador B98765432 (ID: " + contrato3.getIdContrato() + ")");
 
         // --- Verificando Chats Creados/Unidos ---
@@ -111,6 +137,7 @@ public class DemoRunner implements CommandLineRunner {
         // --- 5. Enviando Mensajes ---
         System.out.println("\n--- 5. Enviando Mensajes ---");
         if (chatA.isPresent()) {
+            // Se llama a enviarMensaje con los IDs y el contenido, como se actualizó en MensajeService
             Mensaje msgAlice = mensajeService.enviarMensaje(chatA.get().getIdChat(), alice.getIdPersona(), "Hola a todos, soy Alice! Este es el chat del arrendador A.");
             System.out.println("✔ Mensaje de Alice enviado al chat " + chatA.get().getNombreChat());
 
@@ -128,6 +155,7 @@ public class DemoRunner implements CommandLineRunner {
         if (chatA.isPresent()) {
             System.out.println("Mensajes del chat " + chatA.get().getNombreChat() + ":");
             mensajeService.obtenerMensajesPorChat(chatA.get().getIdChat()).forEach(msg ->
+                // getRemitente() ahora está disponible en la clase Mensaje actualizada
                 System.out.println("  [" + msg.getFechaEnvio().withNano(0) + "] " + msg.getRemitente().getNombre() + ": " + msg.getContenido())
             );
         }
@@ -135,6 +163,7 @@ public class DemoRunner implements CommandLineRunner {
         if (chatB.isPresent()) {
             System.out.println("Mensajes del chat " + chatB.get().getNombreChat() + ":");
             mensajeService.obtenerMensajesPorChat(chatB.get().getIdChat()).forEach(msg ->
+                // getRemitente() ahora está disponible en la clase Mensaje actualizada
                 System.out.println("  [" + msg.getFechaEnvio().withNano(0) + "] " + msg.getRemitente().getNombre() + ": " + msg.getContenido())
             );
         }
@@ -142,8 +171,6 @@ public class DemoRunner implements CommandLineRunner {
         System.out.println("\n--- Demo de Funcionalidades del Backend Finalizada ---");
 
         // Pequeña pausa para asegurar que la transacción se complete antes de que la aplicación se apague
-        // Esto es más un truco para la depuración en entornos de desarrollo rápido.
-        // En una aplicación real, el servidor se mantendría en ejecución.
         try {
             Thread.sleep(2000); // Espera 2 segundos
         } catch (InterruptedException e) {

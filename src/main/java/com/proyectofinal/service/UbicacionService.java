@@ -10,10 +10,12 @@ package com.proyectofinal.service;
  */
 
 import com.proyectofinal.model.Ubicacion;
+import java.util.List;
 import java.util.Optional;
 
 public interface UbicacionService {
     Ubicacion guardarUbicacion(Ubicacion ubicacion);
     Optional<Ubicacion> obtenerUbicacionPorId(Long id);
-    // Otros métodos CRUD si son necesarios
+    List<Ubicacion> obtenerTodasLasUbicaciones();
+    void eliminarUbicacion(Long id);
 }

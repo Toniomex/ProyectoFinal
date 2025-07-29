@@ -21,27 +21,38 @@ public class Mensaje {
     @Column(name = "id_mensaje")
     private Long idMensaje;
 
-    @Column(columnDefinition = "LONGTEXT", nullable = false)
+    @Column(name = "contenido", columnDefinition = "LONGTEXT", nullable = false)
     private String contenido;
 
-    @Column(nullable = false)
+    @Column(name = "fechaEnvio", nullable = false)
     private LocalDateTime fechaEnvio;
 
-    private LocalDateTime fechaEliminacion; // Para borrado lógico
+    @Column(name = "fechaEliminacion")
+    private LocalDateTime fechaEliminacion;
 
-    @ManyToOne(fetch = FetchType.LAZY) // Mantener LAZY para el chat, si no hay problemas
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_chat", nullable = false)
     private Chat chat;
 
-    @ManyToOne(fetch = FetchType.EAGER) // CAMBIO AQUÍ: Carga EAGER para la Persona
-    @JoinColumn(name = "id_persona", nullable = false) // Remitente del mensaje
-    private Persona persona;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_persona", nullable = false)
+    private Persona remitente; // El remitente del mensaje
 
-    // --- Constructores ---
+    // Constructor por defecto (necesario para JPA)
     public Mensaje() {
     }
 
-    // --- Getters y Setters ---
+    // Constructor con todos los campos (sin ID)
+    public Mensaje(Long idMensaje, String contenido, LocalDateTime fechaEnvio, LocalDateTime fechaEliminacion, Chat chat, Persona remitente) {
+        this.idMensaje = idMensaje;
+        this.contenido = contenido;
+        this.fechaEnvio = fechaEnvio;
+        this.fechaEliminacion = fechaEliminacion;
+        this.chat = chat;
+        this.remitente = remitente;
+    }
+
+    // Getters y Setters
     public Long getIdMensaje() {
         return idMensaje;
     }
@@ -82,11 +93,11 @@ public class Mensaje {
         this.chat = chat;
     }
 
-    public Persona getPersona() {
-        return persona;
+    public Persona getRemitente() {
+        return remitente;
     }
 
-    public void setPersona(Persona persona) {
-        this.persona = persona;
+    public void setRemitente(Persona remitente) {
+        this.remitente = remitente;
     }
 }

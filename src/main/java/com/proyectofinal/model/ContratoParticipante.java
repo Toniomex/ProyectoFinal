@@ -16,10 +16,6 @@ import jakarta.persistence.*;
 @Table(name = "ContratoParticipantes")
 public class ContratoParticipante {
 
-    public enum TipoParticipante {
-        ARRENDADOR, INQUILINO
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_contrato_participante")
@@ -30,20 +26,35 @@ public class ContratoParticipante {
     private Contrato contrato;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_persona") // Puede ser nulo si el participante es solo un arrendador (por NIF)
+    @JoinColumn(name = "id_persona") // Puede ser null si el participante es un arrendador por NIF
     private Persona persona;
 
-    private String nifArrendador; // Para identificar al arrendador en este contexto
+    @Column(name = "nifArrendador", length = 255) // Solo para arrendadores, si no son Personas registradas
+    private String NIFArrendador;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "tipoParticipante", nullable = false)
     private TipoParticipante tipoParticipante;
 
-    // --- Constructores ---
+    public enum TipoParticipante {
+        INQUILINO,
+        ARRENDADOR
+    }
+
+    // Constructor por defecto (necesario para JPA)
     public ContratoParticipante() {
     }
 
-    // --- Getters y Setters ---
+    // Constructor con todos los campos (sin ID)
+    public ContratoParticipante(Long idContratoParticipante, Contrato contrato, Persona persona, String NIFArrendador, TipoParticipante tipoParticipante) {
+        this.idContratoParticipante = idContratoParticipante;
+        this.contrato = contrato;
+        this.persona = persona;
+        this.NIFArrendador = NIFArrendador;
+        this.tipoParticipante = tipoParticipante;
+    }
+
+    // Getters y Setters
     public Long getIdContratoParticipante() {
         return idContratoParticipante;
     }
@@ -68,12 +79,12 @@ public class ContratoParticipante {
         this.persona = persona;
     }
 
-    public String getNifArrendador() {
-        return nifArrendador;
+    public String getNIFArrendador() {
+        return NIFArrendador;
     }
 
-    public void setNifArrendador(String nifArrendador) {
-        this.nifArrendador = nifArrendador;
+    public void setNIFArrendador(String NIFArrendador) {
+        this.NIFArrendador = NIFArrendador;
     }
 
     public TipoParticipante getTipoParticipante() {

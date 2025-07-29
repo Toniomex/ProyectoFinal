@@ -7,21 +7,21 @@ package com.proyectofinal.service.impl;
  *
  * @author antoine
  */
-
 import com.proyectofinal.model.Persona;
 import com.proyectofinal.repository.PersonaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // Importar BCryptPasswordEncoder
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.ArrayList;
 
 /**
- * CustomUserDetailsService: Implementación de UserDetailsService para cargar
- * los detalles del usuario (Persona) desde la base de datos para Spring Security.
+ * Implementación de UserDetailsService para cargar los detalles del usuario
+ * desde la base de datos para la autenticación de Spring Security.
  */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -29,48 +29,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
     private PersonaRepository personaRepository;
 
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder; // Inyectar BCryptPasswordEncoder
+    // No se inyecta BCryptPasswordEncoder aquí si se usa en SecurityConfig para AuthenticationManager
+    // Si se inyecta aquí, se debe asegurar que no haya un ciclo de dependencia.
+    // En este caso, el PasswordEncoder se pasa directamente al AuthenticationManagerBuilder en SecurityConfig.
 
-    /**
-     * Carga los detalles del usuario por su nombre de usuario (email en este caso).
-     * @param username El email del usuario.
-     * @return UserDetails que representa al usuario.
-     * @throws UsernameNotFoundException Si el usuario no es encontrado.
-     */
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Buscar la Persona por su email (que es el "username" para Spring Security)
-        Optional<Persona> personaOpt = personaRepository.findByMail(username);
-        if (personaOpt.isEmpty()) {
-            throw new UsernameNotFoundException("Usuario no encontrado con email: " + username);
-        }
-        return personaOpt.get(); // La entidad Persona ya implementa UserDetails
-    }
+    public UserDetails loadUserByUsername(String mail) throws UsernameNotFoundException {
+        Persona persona = personaRepository.findByMail(mail)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con mail: " + mail));
 
-    /**
-     * Método para encriptar una contraseña usando BCrypt.
-     * @param password La contraseña en texto plano.
-     * @return La contraseña encriptada.
-     */
-    public String encriptarContraseña(String password) {
-        return bCryptPasswordEncoder.encode(password);
-    }
-
-    /**
-     * Método para autenticar un usuario manualmente (aunque Spring Security lo hace automáticamente).
-     * Útil para verificar contraseñas fuera del flujo de autenticación estándar si es necesario.
-     * @param email El email del usuario.
-     * @param rawPassword La contraseña en texto plano.
-     * @return true si la autenticación es exitosa, false en caso contrario.
-     */
-    public boolean authenticate(String email, String rawPassword) {
-        Optional<Persona> personaOpt = personaRepository.findByMail(email);
-        if (personaOpt.isPresent()) {
-            Persona persona = personaOpt.get();
-            // Compara la contraseña en texto plano con la hasheada
-            return bCryptPasswordEncoder.matches(rawPassword, persona.getContraseña());
-        }
-        return false;
+        // Construir UserDetails con el rol de la persona
+        return new User(persona.getMail(), persona.getContraseña(), new ArrayList<>());
     }
 }

@@ -11,18 +11,9 @@ package com.proyectofinal.repository;
 
 import com.proyectofinal.model.Contrato;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List;
+import org.springframework.stereotype.Repository;
 
-/**
- * Interfaz de repositorio para la entidad Contrato.
- * Extiende JpaRepository para proporcionar operaciones CRUD básicas
- * y métodos de consulta personalizados para Contrato.
- */
+@Repository
 public interface ContratoRepository extends JpaRepository<Contrato, Long> {
-    /**
-     * Busca contratos por el ID de la persona inquilina asociada.
-     * @param idPersona El ID de la persona inquilina.
-     * @return Una lista de contratos asociados a la persona.
-     */
-    List<Contrato> findByInquilino_IdPersona(Long idPersona);
+    // Puedes añadir métodos de consulta personalizados aquí si los necesitas
 }

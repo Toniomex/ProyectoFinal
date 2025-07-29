@@ -10,21 +10,15 @@ package com.proyectofinal.repository;
  */
 
 
+import com.proyectofinal.model.Chat;
 import com.proyectofinal.model.Mensaje;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
-/**
- * Interfaz de repositorio para la entidad Mensaje.
- * Extiende JpaRepository para proporcionar operaciones CRUD básicas
- * y métodos de consulta personalizados para Mensaje.
- */
+@Repository
 public interface MensajeRepository extends JpaRepository<Mensaje, Long> {
-    /**
-     * Busca mensajes por el ID del chat al que pertenecen.
-     * Los resultados se ordenan por fecha de envío de forma ascendente.
-     * @param idChat El ID del chat.
-     * @return Una lista de mensajes del chat, ordenados por fecha de envío.
-     */
-    List<Mensaje> findByChat_IdChatOrderByFechaEnvioAsc(Long idChat);
+    // Buscar mensajes de un chat ordenados por fecha de envío
+    List<Mensaje> findByChatOrderByFechaEnvioAsc(Chat chat);
 }
