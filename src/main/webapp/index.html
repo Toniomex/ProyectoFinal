@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -35,16 +35,17 @@
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-    <!-- Header Section - Inspired by reviucasa.com's clean header -->
+    <!-- Header Section -->
     <header class="bg-white shadow-sm py-4 px-6 md:px-12 rounded-b-xl">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold text-blue-600">Inquilinos Unidos</h1>
             <nav>
-                <ul class="flex space-x-4">
-                    <li><a href="#" class="text-gray-600 hover:text-blue-500 font-medium">Inicio</a></li>
-                    <li><a href="#" class="text-gray-600 hover:text-blue-500 font-medium">Mis Contratos</a></li>
-                    <li><a href="#" class="text-gray-600 hover:text-blue-500 font-medium">Chats</a></li>
-                    <li><a href="#" class="text-gray-600 hover:text-blue-500 font-medium">Perfil</a></li>
+                <ul class="flex space-x-4 items-center">
+                    <li><a href="#" id="nav-inicio" class="text-gray-600 hover:text-blue-500 font-medium">Inicio</a></li>
+                    <li><a href="#" id="nav-contratos" class="text-gray-600 hover:text-blue-500 font-medium">Mis Contratos</a></li>
+                    <li><a href="#" id="nav-chats" class="text-gray-600 hover:text-blue-500 font-medium">Chats</a></li>
+                    <li><a href="#" id="nav-perfil" class="text-gray-600 hover:text-blue-500 font-medium">Perfil</a></li>
+                    <span id="user-display" class="text-blue-700 font-semibold ml-4 hidden"></span>
                     <li id="logout-container" class="hidden">
                         <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out text-sm">
                             Cerrar Sesión
@@ -103,9 +104,16 @@
                 </form>
             </section>
 
-            <!-- Chat Section -->
-            <section class="bg-white p-8 rounded-xl shadow-md flex flex-col">
-                <h2 class="text-2xl font-semibold text-gray-700 mb-6">Chat con tu Arrendador</h2>
+            <!-- Mis Contratos Section - Oculta por defecto -->
+            <section id="mis-contratos-section" class="bg-white p-8 rounded-xl shadow-md flex flex-col" style="display: none;">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6">Mis Contratos</h2>
+                <p class="text-gray-600">Aquí se mostrarán tus contratos de alquiler.</p>
+                <!-- Contenido futuro para contratos -->
+            </section>
+
+            <!-- Chat Section - Oculta por defecto -->
+            <section id="chat-section" class="bg-white p-8 rounded-xl shadow-md flex flex-col" style="display: none;">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6">Chat con los inquilinos de tu arrendador</h2>
                 <div class="mb-4">
                     <label for="chat-nif" class="block text-gray-700 text-sm font-bold mb-2">NIF del Arrendador (para unirse/crear chat)</label>
                     <input type="text" id="chat-nif" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Ej: A12345678">
@@ -129,6 +137,13 @@
                         </button>
                     </div>
                 </form>
+            </section>
+
+            <!-- Perfil Section - Oculta por defecto -->
+            <section id="perfil-section" class="bg-white p-8 rounded-xl shadow-md flex flex-col" style="display: none;">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6">Mi Perfil</h2>
+                <p class="text-gray-600">Aquí podrás ver y editar la información de tu perfil.</p>
+                <!-- Contenido futuro para perfil -->
             </section>
 
         </div>
@@ -158,6 +173,16 @@
         const logoutBtn = document.getElementById('logout-btn');
         const logoutContainer = document.getElementById('logout-container');
         const authSection = document.getElementById('auth-section');
+        const chatSection = document.getElementById('chat-section');
+        const misContratosSection = document.getElementById('mis-contratos-section'); // Nuevo
+        const perfilSection = document.getElementById('perfil-section'); // Nuevo
+        const userDisplaySpan = document.getElementById('user-display'); // Nuevo
+
+        // Elementos de navegación
+        const navInicio = document.getElementById('nav-inicio');
+        const navContratos = document.getElementById('nav-contratos');
+        const navChats = document.getElementById('nav-chats');
+        const navPerfil = document.getElementById('nav-perfil');
 
 
         let currentUserId = null; // ID del usuario autenticado
@@ -174,18 +199,34 @@
             }`;
         }
 
+        // Función para ocultar todas las secciones de contenido
+        function hideAllContentSections() {
+            authSection.style.display = 'none';
+            chatSection.style.display = 'none';
+            misContratosSection.style.display = 'none';
+            perfilSection.style.display = 'none';
+        }
+
         // Función para actualizar el estado de la UI según la autenticación
         function updateAuthUI() {
+            hideAllContentSections(); // Ocultar todas las secciones primero
+
             if (currentUserId && currentUserName) {
                 showStatus(`¡Bienvenido, ${currentUserName}! Sesión iniciada.`, 'success');
-                authSection.classList.add('hidden'); // Oculta los formularios de registro/login
+                userDisplaySpan.textContent = `Conectado como: ${currentUserName}`;
+                userDisplaySpan.classList.remove('hidden'); // Muestra el nombre del usuario
                 logoutContainer.classList.remove('hidden'); // Muestra el botón de logout
+                
+                // Mostrar la sección de chat por defecto al iniciar sesión
+                chatSection.style.display = 'flex'; 
                 chatInput.disabled = false;
                 sendMessageBtn.disabled = false;
             } else {
                 showStatus('Inicia sesión o regístrate para comenzar.', 'info');
-                authSection.classList.remove('hidden'); // Muestra los formularios
+                authSection.style.display = 'flex'; // Muestra los formularios de auth
+                userDisplaySpan.classList.add('hidden'); // Oculta el nombre del usuario
                 logoutContainer.classList.add('hidden'); // Oculta el botón de logout
+                
                 chatInput.disabled = true;
                 sendMessageBtn.disabled = true;
             }
@@ -207,6 +248,8 @@
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             const telefono = document.getElementById('register-phone').value;
+
+            console.log('Registrando con:', { nombre, email, password, telefono }); // DEBUG
 
             try {
                 const response = await fetch(`${API_BASE_URL}/register`, {
@@ -235,6 +278,8 @@
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
 
+            console.log('Intentando iniciar sesión con:', { email, password }); // DEBUG
+
             try {
                 const response = await fetch(`${API_BASE_URL}/login`, {
                     method: 'POST',
@@ -252,8 +297,13 @@
                     updateAuthUI(); // Actualizar UI
                     loginForm.reset();
                 } else {
-                    const errorData = await response.json();
-                    showStatus(`Error al iniciar sesión: ${errorData.message || response.statusText}`, 'error');
+                    // Spring Security puede redirigir en caso de fallo de login si el filtro formLogin está activo
+                    // o si el controlador lanza una excepción no manejada que causa un 302/401.
+                    // Si la respuesta no es JSON, intentar leer como texto para depurar.
+                    const errorText = await response.text();
+                    console.error('Respuesta no-JSON o error:', errorText);
+                    showStatus(`Error al iniciar sesión: ${errorText || response.statusText}`, 'error');
+                    
                     currentUserId = null;
                     currentUserName = null;
                     localStorage.removeItem('currentUserId');
@@ -386,9 +436,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contenido: messageContent,
-                        // No necesitas idChat ni idPersona en el body si el backend los obtiene de la sesión
-                        // O si el controlador los espera en el path/body, asegúrate de que coincidan.
-                        // Para esta demo, el backend espera el objeto Mensaje completo.
                         chat: { idChat: currentChatId },
                         persona: { idPersona: currentUserId }
                     }),
@@ -396,7 +443,6 @@
                 });
 
                 if (response.ok) {
-                    // const newMessage = await response.json(); // Si el backend devuelve el objeto completo
                     chatInput.value = ''; // Limpiar input
                     loadChatMessages(currentChatId); // Recargar todos los mensajes para ver el propio y los nuevos de otros
                 } else {
@@ -408,6 +454,55 @@
                 showStatus('Error de conexión al enviar mensaje. Inténtalo de nuevo más tarde.', 'error');
             }
         });
+
+        // --- Manejo de la navegación ---
+        navInicio.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentUserId) {
+                hideAllContentSections();
+                chatSection.style.display = 'flex'; // Vuelve al chat si está logueado
+            } else {
+                hideAllContentSections();
+                authSection.style.display = 'flex'; // Vuelve a la autenticación si no está logueado
+            }
+        });
+
+        navContratos.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentUserId) {
+                hideAllContentSections();
+                misContratosSection.style.display = 'flex';
+                // Aquí podrías llamar a una función para cargar los contratos del usuario
+            } else {
+                showStatus('Por favor, inicia sesión para ver tus contratos.', 'info');
+            }
+        });
+
+        navChats.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentUserId) {
+                hideAllContentSections();
+                chatSection.style.display = 'flex';
+                // Si ya hay un chat seleccionado, podrías recargar los mensajes
+                if (currentChatId) {
+                    loadChatMessages(currentChatId);
+                }
+            } else {
+                showStatus('Por favor, inicia sesión para acceder a los chats.', 'info');
+            }
+        });
+
+        navPerfil.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentUserId) {
+                hideAllContentSections();
+                perfilSection.style.display = 'flex';
+                // Aquí podrías cargar los datos del perfil del usuario
+            } else {
+                showStatus('Por favor, inicia sesión para ver tu perfil.', 'info');
+            }
+        });
+
 
         // Inicializar estado al cargar la página
         document.addEventListener('DOMContentLoaded', () => {

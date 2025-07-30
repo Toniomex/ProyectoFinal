@@ -7,121 +7,78 @@ package com.proyectofinal.config;
  *
  * @author antoine
  */
-
+import com.proyectofinal.service.impl.CustomUserDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter;
-import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter.Directive;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 /**
- * Clase de configuración de seguridad para la aplicación Spring Boot.
- * Esta configuración permite el acceso a los recursos estáticos y a la API REST
- * sin autenticación para fines de desarrollo y demostración.
- * También configura CORS para permitir solicitudes desde el frontend.
+ * Clase de configuración de Spring Security.
+ * Define las reglas de seguridad, el codificador de contraseñas y el servicio de detalles de usuario.
  */
 @Configuration
-@EnableWebSecurity // Habilita la configuración de seguridad web de Spring Security
+@EnableWebSecurity // Habilita la seguridad web de Spring
 public class SecurityConfig {
 
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
+
+    // El bean BCryptPasswordEncoder se define en AppConfig.java para evitar duplicidades.
+    // @Bean
+    // public BCryptPasswordEncoder bCryptPasswordEncoder() {
+    //     return new BCryptPasswordEncoder();
+    // }
+
     /**
-     * Define la cadena de filtros de seguridad.
-     *
-     * @param http Objeto HttpSecurity para configurar la seguridad.
+     * Configura la cadena de filtros de seguridad HTTP.
+     * @param http El objeto HttpSecurity para configurar.
      * @return La cadena de filtros de seguridad configurada.
      * @throws Exception Si ocurre un error durante la configuración.
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Deshabilita CSRF (Cross-Site Request Forgery) para permitir solicitudes POST desde el frontend
-            // En una aplicación de producción con un frontend separado, CSRF debe manejarse adecuadamente.
-            .csrf(csrf -> csrf.disable())
-            // Configura las reglas de autorización para las solicitudes HTTP
+            .csrf(csrf -> csrf.disable()) // Deshabilita CSRF para APIs REST (considerar implicaciones de seguridad)
             .authorizeHttpRequests(authorize -> authorize
-                // Permite el acceso a todos los archivos estáticos (HTML, CSS, JS, imágenes)
-                .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/favicon.ico").permitAll()
-                // Permite el acceso a todas las rutas de la API (ej. /api/personas/1, /api/contratos/inquilino/1)
-                // Esto es crucial para que el frontend pueda comunicarse con el backend sin autenticación por ahora.
-                .requestMatchers("/api/**").permitAll()
-                // **CAMBIO AQUÍ**: Permite el acceso a CUALQUIER otra solicitud.
-                // Esto asegura que no haya rutas bloqueadas por defecto en esta demo.
-                .anyRequest().permitAll()
+                // Rutas públicas que no requieren autenticación
+                // Permitir acceso a la raíz, index.html, y los endpoints de registro/login/logout
+                .requestMatchers("/", "/index.html", "/api/register", "/api/login", "/api/logout", "/css/**", "/js/**", "/error").permitAll()
+                // Todas las demás rutas /api requieren autenticación
+                .requestMatchers("/api/**").authenticated()
+                // Cualquier otra solicitud no especificada requiere autenticación
+                .anyRequest().authenticated()
             )
-            // Deshabilita la autenticación por formulario (formLogin)
-            .formLogin(formLogin -> formLogin.disable())
-            // Deshabilita la autenticación HTTP básica (httpBasic)
-            .httpBasic(httpBasic -> httpBasic.disable())
-            // Configura CORS (Cross-Origin Resource Sharing) para permitir solicitudes desde el dominio del frontend
-            // Esto es necesario si tu frontend se ejecuta en un dominio/puerto diferente al backend (ej. 3000 vs 8080)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // Configura cabeceras para limpiar los datos del sitio al cerrar la sesión (útil en producción)
-            .headers(headers -> headers
-                .addHeaderWriter(new ClearSiteDataHeaderWriter(Directive.ALL))
+            // ELIMINADAS LAS CONFIGURACIONES DE formLogin y logout por defecto.
+            // Tu PersonaController ahora maneja /api/login y /api/logout directamente.
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Usa sesión si es necesario (por defecto)
             );
+
         return http.build();
     }
 
     /**
-     * Configura las políticas de CORS (Cross-Origin Resource Sharing).
-     * Permite que el frontend (ej. localhost:3000 o localhost:8080 si se abre el HTML directamente)
-     * pueda realizar solicitudes al backend.
-     *
-     * @return Una fuente de configuración CORS basada en URL.
-     */
-    @Bean
-    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        // Permite solicitudes desde cualquier origen. En producción, deberías especificar dominios exactos.
-        configuration.addAllowedOrigin("*");
-        // Permite todos los métodos HTTP (GET, POST, PUT, DELETE, etc.)
-        configuration.addAllowedMethod("*");
-        // Permite todas las cabeceras HTTP
-        configuration.addAllowedHeader("*");
-        // Permite el envío de credenciales (cookies, encabezados de autorización)
-        configuration.setAllowCredentials(false); // Cambiado a false ya que no estamos usando cookies/sesiones con credenciales explícitas
-                                                 // Si se usara JWT con encabezados de autorización, esto podría ser true.
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Aplica esta configuración CORS a todas las rutas de la API
-        source.registerCorsConfiguration("/api/**", configuration);
-        return source;
-    }
-
-    /**
-     * Define el bean PasswordEncoder para el cifrado de contraseñas.
-     * Usamos BCryptPasswordEncoder, que es un algoritmo de hashing seguro.
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    /**
-     * Define el bean AuthenticationManager.
-     * Es responsable de la autenticación de usuarios.
-     * Requiere un UserDetailsService para cargar los detalles del usuario
-     * y un PasswordEncoder para verificar las contraseñas.
-     *
-     * @param userDetailsService El servicio para cargar los detalles del usuario.
-     * @param passwordEncoder El codificador de contraseñas.
+     * Define el AuthenticationManager.
+     * @param http HttpSecurity para construir el AuthenticationManager.
+     * @param bCryptPasswordEncoder El codificador de contraseñas inyectado desde AppConfig.
      * @return El AuthenticationManager configurado.
+     * @throws Exception Si ocurre un error.
      */
     @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder);
-        return new ProviderManager(authenticationProvider);
+    public AuthenticationManager authenticationManager(HttpSecurity http, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+            http.getSharedObject(AuthenticationManagerBuilder.class);
+        authenticationManagerBuilder
+            .userDetailsService(customUserDetailsService)
+            .passwordEncoder(bCryptPasswordEncoder);
+        return authenticationManagerBuilder.build();
     }
 }

@@ -23,7 +23,6 @@ com/proyectofinal/repository/ContratoParticipanteRepository.class
 com/proyectofinal/repository/HistorialPrecioRepository.class
 com/proyectofinal/controller/ContratoController.class
 com/proyectofinal/model/ContratoParticipante.class
-com/proyectofinal/controller/PersonaController$LoginRequest.class
 com/proyectofinal/controller/UbicacionController.class
 com/proyectofinal/service/impl/ContratoServiceImpl.class
 com/proyectofinal/service/impl/PersonaServiceImpl.class
