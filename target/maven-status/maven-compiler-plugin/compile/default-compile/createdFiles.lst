@@ -27,7 +27,6 @@ com/proyectofinal/controller/UbicacionController.class
 com/proyectofinal/service/impl/ContratoServiceImpl.class
 com/proyectofinal/service/impl/PersonaServiceImpl.class
 com/proyectofinal/runner/DemoRunner.class
-com/proyectofinal/config/SecurityConfig.class
 com/proyectofinal/controller/PersonaController.class
 com/proyectofinal/model/Mensaje.class
 com/proyectofinal/model/Ubicacion.class

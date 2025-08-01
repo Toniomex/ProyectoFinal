@@ -1,0 +1,8 @@
+com.proyectofinal
+com.proyectofinal.config
+com.proyectofinal.controller
+com.proyectofinal.model
+com.proyectofinal.repository
+com.proyectofinal.runner
+com.proyectofinal.service
+com.proyectofinal.service.impl
